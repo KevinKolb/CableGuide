@@ -612,6 +612,26 @@ def get_pbs_schedule() -> list[dict]:
 
 
 # ------------------------------------------------------------
+# Channel metadata (type and source)
+# ------------------------------------------------------------
+
+CHANNEL_METADATA = {
+    "CNN": {"type": "broadcast", "source": "CNN"},
+    "ESPN": {"type": "broadcast", "source": "ESPN"},
+    "FOX": {"type": "broadcast", "source": "FOX"},
+    "NBC": {"type": "broadcast", "source": "NBC"},
+    "PBS": {"type": "broadcast", "source": "PBS"},
+    "ABC": {"type": "broadcast", "source": "ABC"},
+    "NFLX1": {"type": "streaming", "source": "Netflix"},
+    "HBO1": {"type": "streaming", "source": "HBO Max"},
+    "HULU1": {"type": "streaming", "source": "Hulu"},
+    "ATV+": {"type": "streaming", "source": "Apple TV+"},
+    "P+": {"type": "streaming", "source": "Paramount+"},
+    "PCOK": {"type": "streaming", "source": "Peacock"},
+}
+
+
+# ------------------------------------------------------------
 # Channel catalog (live + static/streaming)
 # ------------------------------------------------------------
 
@@ -857,6 +877,10 @@ def load_existing_channels() -> dict:
             channel_num = channel_num_el.text or ""
             channel_name = channel_name_el.text or ""
 
+            # Load type and source attributes if they exist
+            channel_type = channel.get("type", "")
+            channel_source = channel.get("source", "")
+
             schedule: list[dict] = []
             for show in shows_elem.findall("show"):
                 schedule.append(
@@ -869,7 +893,12 @@ def load_existing_channels() -> dict:
                 )
 
             if channel_num:
-                existing[channel_num] = {"name": channel_name, "schedule": schedule}
+                existing[channel_num] = {
+                    "name": channel_name,
+                    "schedule": schedule,
+                    "type": channel_type,
+                    "source": channel_source,
+                }
 
         return existing
 
@@ -927,6 +956,17 @@ def update_guide_xml() -> None:
 
     for channel_num, channel_info in merged_channels.items():
         channel_el = ET.SubElement(channels_elem, "channel")
+
+        # Set type and source attributes
+        # First check if they're in the channel_info (from existing XML)
+        # Otherwise, look them up in CHANNEL_METADATA
+        channel_type = channel_info.get("type") or CHANNEL_METADATA.get(channel_num, {}).get("type", "")
+        channel_source = channel_info.get("source") or CHANNEL_METADATA.get(channel_num, {}).get("source", "")
+
+        if channel_type:
+            channel_el.set("type", channel_type)
+        if channel_source:
+            channel_el.set("source", channel_source)
 
         number_el = ET.SubElement(channel_el, "number")
         number_el.text = channel_num

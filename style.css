@@ -4,12 +4,54 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #0a0a1a;
-    font-family: 'Arial', sans-serif;
+    background-color: #ffffff;
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     display: flex;
     flex-direction: column;
     align-items: center;
     min-height: 100vh;
+}
+
+/* ============================================================================
+   SWISS DESIGN HEADER
+   Clean, minimal, grid-based header with mathematical precision
+   ============================================================================ */
+.swiss-header {
+    width: 100%;
+    background-color: #ffffff;
+    border-bottom: 1px solid #000000;
+    padding: 0;
+    margin: 0;
+}
+
+.swiss-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 20px 30px 20px;
+}
+
+.swiss-title {
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-size: 72px;
+    font-weight: 300;
+    letter-spacing: -2px;
+    line-height: 1;
+    margin: 0;
+    padding: 0;
+    color: #000000;
+    text-transform: uppercase;
+}
+
+.swiss-tagline {
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    margin: 12px 0 0 0;
+    padding: 0;
+    color: #000000;
+    text-transform: none;
 }
 
 /* ============================================================================
@@ -31,7 +73,8 @@ body {
     border-radius: 12px;
     overflow: hidden;
     width: 100%;
-    height: 900px;
+    min-height: 900px;
+    height: auto;
     position: relative;
     box-shadow: inset 0 0 60px rgba(0,0,0,0.8), 0 0 20px rgba(50,100,255,0.3);
 }
@@ -57,40 +100,37 @@ body {
 }
 
 /* ============================================================================
-   CLOCK
+   CLOCK AND DATE
    ============================================================================ */
 .clock {
-    position: absolute;
-    top: 8px;
-    right: 15px;
     color: #ffd700;
-    font-size: 22px;
+    font-size: 16px;
     font-weight: bold;
-    z-index: 10;
     text-shadow: 0 0 10px rgba(255,215,0,0.8), 2px 2px 4px rgba(0,0,0,0.8);
     background: rgba(0,0,50,0.6);
-    padding: 4px 12px;
+    padding: 6px 12px;
     border-radius: 6px;
     border: 1px solid rgba(255,215,0,0.3);
+    line-height: 1.3;
+    text-align: center;
+    white-space: nowrap;
+    margin-left: 10px;
 }
 
 /* ============================================================================
    FULLSCREEN BUTTON
    ============================================================================ */
 .fullscreen-btn {
-    position: absolute;
-    top: 8px;
-    left: 15px;
     color: #ffd700;
-    font-size: 24px;
+    font-size: 20px;
     font-weight: bold;
-    z-index: 10;
     background: rgba(0,0,50,0.6);
-    padding: 4px 12px;
+    padding: 6px 12px;
     border-radius: 6px;
     border: 1px solid rgba(255,215,0,0.3);
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-right: 10px;
 }
 
 .fullscreen-btn:hover {
@@ -187,8 +227,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
     padding: 10px 5px;
+    position: relative;
+    min-height: 180px;
 }
 
 .ads-carousel::-webkit-scrollbar {
@@ -214,12 +255,15 @@ body {
     width: 280px;
     text-decoration: none;
     display: block;
-    transition: all 0.3s ease;
+    transition: opacity 0.8s ease-in-out, transform 0.3s ease;
     cursor: pointer;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .ad-item:hover {
-    transform: scale(1.05);
+    transform: translateX(-50%) scale(1.05);
 }
 
 .ad-item img {
@@ -252,84 +296,207 @@ body {
 }
 
 /* ============================================================================
-   YOUTUBE VIDEOS CONTAINER
+   MEDIA CONTROLS BAR
+   Date, time, fullscreen, and speed controls in one row
    ============================================================================ */
-.youtube-container {
-    padding: 15px;
-    background: #0d1633;
-    border-bottom: 2px solid #1a237e;
-    display: none; /* Hidden by default, shown when videos are loaded */
-}
-
-.youtube-container.has-videos {
-    display: block;
-}
-
-.youtube-videos {
+.media-controls-bar {
     display: flex;
-    gap: 15px;
-    overflow-x: auto;
-    padding-bottom: 10px;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 15px;
+    background: linear-gradient(90deg, #1a237e 0%, #283593 50%, #1a237e 100%);
+    border-bottom: 2px solid #0d1633;
 }
 
-.youtube-videos::-webkit-scrollbar {
-    height: 8px;
-}
-
-.youtube-videos::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.3);
-    border-radius: 4px;
-}
-
-.youtube-videos::-webkit-scrollbar-thumb {
-    background: #2d3e8f;
-    border-radius: 4px;
-}
-
-.youtube-videos::-webkit-scrollbar-thumb:hover {
-    background: #3d5afe;
-}
-
-.youtube-video {
-    flex-shrink: 0;
-    width: 280px;
-}
-
-.youtube-video iframe {
-    width: 100%;
-    height: 157px;
-    border: 2px solid #3d5afe;
-    border-radius: 8px;
-}
-
-.youtube-video-title {
+.media-controls-bar .clock {
     color: #ffd700;
-    font-size: 13px;
-    margin-top: 6px;
-    text-align: center;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    font-size: 14px;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255,215,0,0.8);
+    background: rgba(0,0,50,0.6);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,215,0,0.3);
+}
+
+.media-controls-bar .fullscreen-btn {
+    color: #ffd700;
+    font-size: 18px;
+    font-weight: bold;
+    background: rgba(0,0,50,0.6);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,215,0,0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.media-controls-bar .fullscreen-btn:hover {
+    background: rgba(61,90,254,0.8);
+    border-color: #3d5afe;
+    color: #ffffff;
+}
+
+.speed-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.speed-control label {
+    color: #ffd700;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255,215,0,0.8);
+}
+
+.speed-control input[type="range"] {
+    width: 100px;
+    height: 6px;
+    background: rgba(0,0,50,0.6);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+}
+
+.speed-control input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: #ffd700;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255,215,0,0.8);
+}
+
+.speed-control input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: #ffd700;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255,215,0,0.8);
+    border: none;
+}
+
+.speed-control #speedValue {
+    color: #ffd700;
+    font-weight: bold;
+    min-width: 35px;
+    text-shadow: 0 0 10px rgba(255,215,0,0.8);
 }
 
 /* ============================================================================
-   GUIDE HEADER (Date & Time Slots)
+   MEDIA LAYOUT - Playlist (50%) + Future Container (50%)
+   ============================================================================ */
+.media-layout {
+    display: none; /* Hidden until videos load */
+    width: 100%;
+    border-bottom: 2px solid #1a237e;
+}
+
+.videos-container {
+    width: 50%;
+    padding: 0;
+    background: transparent;
+    display: none; /* Hidden by default, shown when videos are loaded via JS */
+    flex-direction: column;
+}
+
+.future-container {
+    width: 50%;
+    background: linear-gradient(180deg, #0d1633 0%, #1a1a2e 50%, #0d1633 100%);
+    border-left: 2px solid #1a237e;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 14px;
+}
+
+.movie-screen {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    background: #000000;
+}
+
+.screen-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.screen-label {
+    color: #ffd700;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    text-shadow:
+        0 0 10px rgba(255,215,0,0.8),
+        0 0 20px rgba(61,90,254,0.4),
+        2px 2px 4px rgba(0,0,0,0.8);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,215,0,0.1) 50%, transparent 100%);
+    border-radius: 8px;
+    animation: cinema-glow 3s ease-in-out infinite;
+}
+
+@keyframes cinema-glow {
+    0%, 100% {
+        text-shadow:
+            0 0 10px rgba(255,215,0,0.8),
+            0 0 20px rgba(61,90,254,0.4),
+            2px 2px 4px rgba(0,0,0,0.8);
+    }
+    50% {
+        text-shadow:
+            0 0 20px rgba(255,215,0,1),
+            0 0 40px rgba(61,90,254,0.6),
+            2px 2px 4px rgba(0,0,0,0.8);
+    }
+}
+
+/* ============================================================================
+   GUIDE HEADER (Channel Spacer & Time Slots)
    ============================================================================ */
 .guide-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px 15px;
     background: linear-gradient(180deg, #2d3e8f 0%, #1e2a6e 100%);
     color: #fff;
     border-bottom: 3px solid #0d1633;
     box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    padding: 5px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.date-display {
-    font-size: 18px;
-    font-weight: bold;
-    color: #ffd700;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-    min-width: 150px;
+.channel-spacer {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+    flex-shrink: 0;
+    background: linear-gradient(90deg, #1a237e 0%, #283593 100%);
+    border-right: 3px solid #0a0a15;
+    height: 100%;
+    box-shadow: inset -5px 0 10px rgba(0,0,0,0.3);
 }
 
 .time-slots-container {
@@ -363,7 +530,7 @@ body {
    ============================================================================ */
 .guide-container {
     height: 770px;
-    overflow-y: hidden;
+    overflow-y: scroll;
     background: #0d1633;
     cursor: grab;
     user-select: none;
@@ -371,6 +538,32 @@ body {
 
 .guide-container.dragging {
     cursor: grabbing;
+}
+
+/* Scrollbar styling for guide container */
+.guide-container::-webkit-scrollbar {
+    width: 12px;
+}
+
+.guide-container::-webkit-scrollbar-track {
+    background: rgba(10,10,21,0.8);
+    border-left: 2px solid #1a237e;
+}
+
+.guide-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #2d3e8f 0%, #1e2a6e 100%);
+    border-radius: 6px;
+    border: 2px solid #1a237e;
+    box-shadow: inset 0 0 6px rgba(61,90,254,0.5);
+}
+
+.guide-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #3d5afe 0%, #2d3e8f 100%);
+    box-shadow: inset 0 0 8px rgba(61,90,254,0.8);
+}
+
+.guide-container::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, #5d7afe 0%, #3d5afe 100%);
 }
 
 .guide-scroll {
@@ -408,11 +601,13 @@ body {
 }
 
 .channel-number {
+    width: 80px;
     min-width: 80px;
+    max-width: 80px;
     color: #ffd700;
     font-weight: bold;
-    font-size: 18px;
-    padding: 12px;
+    font-size: 16px;
+    padding: 12px 4px;
     background: linear-gradient(90deg, #1a237e 0%, #283593 100%);
     text-align: center;
     border-right: 3px solid #0a0a15;
@@ -421,6 +616,31 @@ body {
     justify-content: center;
     text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
     box-shadow: inset -5px 0 10px rgba(0,0,0,0.3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
+    position: relative;
+}
+
+.channel-number:hover::after {
+    content: attr(data-channel-name);
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, #1a237e 0%, #0d1633 100%);
+    color: #ffffff;
+    padding: 8px 12px;
+    border: 2px solid #3d5afe;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 9999;
+    margin-left: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 30px rgba(61,90,254,0.4);
+    font-size: 14px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    pointer-events: none;
 }
 
 /* ============================================================================
@@ -478,19 +698,18 @@ body {
 }
 
 /* ============================================================================
-   CHANNEL FILTERS CONTROL PANEL
+   CHANNEL FILTERS CONTROL PANEL (Swiss Design)
    ============================================================================ */
 .controls {
     position: relative;
     width: 95%;
     max-width: 1400px;
-    background: linear-gradient(135deg, #1a237e 0%, #0d1633 100%);
-    color: #fff;
-    padding: 12px;
-    border-radius: 12px;
-    border: 2px solid #3d5afe;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.8), 0 0 30px rgba(61,90,254,0.3);
-    margin: 20px auto 0;
+    background: #ffffff;
+    color: #000000;
+    padding: 20px;
+    border: 1px solid #000000;
+    box-shadow: none;
+    margin: 20px auto;
 }
 
 .controls-header {
@@ -498,80 +717,89 @@ body {
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
-    padding: 8px;
-    background: rgba(0,0,0,0.3);
-    border-radius: 8px;
+    padding: 0 0 12px 0;
+    background: transparent;
+    border-bottom: 1px solid #000000;
     transition: all 0.2s ease;
 }
 
 .controls-header:hover {
-    background: rgba(61,90,254,0.3);
+    opacity: 0.7;
 }
 
 .controls-header h3 {
     margin: 0;
-    font-size: 16px;
-    color: #ffd700;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: #000000;
+    text-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.controls-header h3 span:first-child {
+    display: none; /* Hide emoji in Swiss design */
 }
 
 .toggle-arrow {
-    font-size: 20px;
-    color: #ffd700;
+    font-size: 16px;
+    color: #000000;
 }
 
 .channel-filters {
-    margin-top: 12px;
+    margin-top: 20px;
     max-height: 300px;
     overflow-y: auto;
-    padding: 8px;
+    padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
 }
 
 .channel-filters::-webkit-scrollbar {
-    width: 8px;
+    width: 1px;
 }
 
 .channel-filters::-webkit-scrollbar-track {
-    background: rgba(0,0,0,0.3);
-    border-radius: 4px;
+    background: #ffffff;
 }
 
 .channel-filters::-webkit-scrollbar-thumb {
-    background: #2d3e8f;
-    border-radius: 4px;
+    background: #000000;
 }
 
 .channel-filters::-webkit-scrollbar-thumb:hover {
-    background: #3d5afe;
+    background: #333333;
 }
 
 .filter-item {
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     font-size: 14px;
+    font-weight: 400;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 6px;
-    border-radius: 4px;
+    gap: 10px;
+    padding: 8px 0;
+    border-radius: 0;
     transition: all 0.2s ease;
 }
 
 .filter-item:hover {
-    background: rgba(61,90,254,0.2);
+    opacity: 0.7;
 }
 
 .filter-item input[type="checkbox"] {
     cursor: pointer;
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
+    accent-color: #000000;
 }
 
 .filter-item label {
     cursor: pointer;
-    color: #ffffff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    color: #000000;
+    text-shadow: none;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -593,46 +821,383 @@ body {
 }
 
 /* ============================================================================
-   PAGE FOOTER
+   PAGE FOOTER (Swiss Design)
    ============================================================================ */
 .page-footer {
     width: 100%;
-    padding: 20px;
-    text-align: center;
-    background: linear-gradient(135deg, #1a237e 0%, #0d1633 100%);
-    border-top: 2px solid #3d5afe;
-    margin-top: 20px;
+    padding: 30px 20px;
+    text-align: left;
+    background: #ffffff;
+    border-top: 1px solid #000000;
+    margin-top: 40px;
 }
 
 .page-footer p {
-    margin: 0;
-    color: #ffffff;
+    max-width: 1400px;
+    margin: 0 auto 8px auto;
+    color: #000000;
+    font-family: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
     font-size: 14px;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+    font-weight: 400;
+    text-shadow: none;
 }
 
 .page-footer a {
-    color: #ffd700;
-    text-decoration: none;
-    font-weight: bold;
-    transition: all 0.3s ease;
-    text-shadow: 0 0 10px rgba(255,215,0,0.6);
+    color: #000000;
+    text-decoration: underline;
+    font-weight: 400;
+    transition: all 0.2s ease;
+    text-shadow: none;
 }
 
 .page-footer a:hover {
-    color: #3d5afe;
-    text-shadow: 0 0 15px rgba(61,90,254,0.8);
-    text-decoration: underline;
+    opacity: 0.7;
 }
 
 .visitor-count {
-    margin-top: 8px !important;
-    color: #ffd700;
-    font-size: 13px;
+    margin-top: 0 !important;
+    color: #000000;
+    font-size: 14px;
 }
 
 .visitor-count #visitorCount {
-    font-weight: bold;
-    color: #3d5afe;
-    text-shadow: 0 0 10px rgba(61,90,254,0.6);
+    font-weight: 400;
+    color: #000000;
+    text-shadow: none;
+}
+
+/* ============================================================================
+   MOBILE LANDSCAPE OPTIMIZATIONS
+   ============================================================================ */
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+    body {
+        padding: 0;
+        margin: 0;
+    }
+
+    .swiss-container {
+        padding: 20px 15px;
+    }
+
+    .swiss-title {
+        font-size: 48px;
+        letter-spacing: -1px;
+    }
+
+    .swiss-tagline {
+        font-size: 14px;
+        margin-top: 8px;
+    }
+
+    .tv-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    .screen {
+        height: calc(100vh - 140px);
+        border-width: 8px;
+    }
+
+    /* Hide or collapse channel filters on mobile landscape */
+    .controls {
+        width: 100%;
+        margin: 10px 0;
+        padding: 8px;
+    }
+
+    .controls.collapsed .channel-filters {
+        display: none;
+    }
+
+    .channel-filters {
+        max-height: 150px;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 6px;
+    }
+
+    /* Adjust guide header for mobile */
+    .guide-header {
+        padding: 3px 0;
+    }
+
+    .fullscreen-btn {
+        font-size: 16px;
+        padding: 4px 8px;
+        margin-right: 5px;
+    }
+
+    .clock {
+        font-size: 12px;
+        padding: 4px 8px;
+        margin-left: 5px;
+    }
+
+    .channel-spacer {
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+    }
+
+    .channel-number {
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+        font-size: 14px;
+        padding: 8px 2px;
+    }
+
+    .time-slot {
+        width: 110px;
+        font-size: 12px;
+        padding: 4px 0;
+    }
+
+    /* Adjust guide container height for mobile landscape */
+    .guide-container {
+        height: calc(100vh - 240px);
+    }
+
+    .show-block {
+        min-height: 40px;
+        font-size: 11px;
+        padding: 6px 8px;
+    }
+
+    /* Adjust show block width for mobile */
+    .show-block {
+        min-width: 90px !important;
+    }
+
+    /* Hide tooltips on mobile to improve performance */
+    .show-block:hover::after {
+        display: none;
+    }
+
+    /* Adjust ads container for mobile */
+    .ads-container {
+        padding: 10px;
+    }
+
+    .ad-item {
+        width: 200px;
+    }
+
+    .ad-item img {
+        height: 112px;
+    }
+
+    /* Adjust movie screen for mobile landscape */
+    .videos-container {
+        padding: 15px 10px;
+    }
+
+    .movie-screen {
+        max-width: 100%;
+    }
+
+    .screen-wrapper {
+        padding-bottom: 50%; /* Closer to 16:9 on mobile */
+        border-width: 3px;
+    }
+
+    .screen-label {
+        font-size: 14px;
+        letter-spacing: 2px;
+        padding: 8px 15px;
+    }
+
+    /* Reduce footer padding */
+    .page-footer {
+        padding: 10px;
+        margin-top: 10px;
+    }
+
+    .page-footer p {
+        font-size: 12px;
+    }
+}
+
+/* Extra small mobile landscape */
+@media screen and (max-width: 768px) and (orientation: landscape) {
+    .swiss-container {
+        padding: 15px 10px;
+    }
+
+    .swiss-title {
+        font-size: 36px;
+        letter-spacing: -1px;
+    }
+
+    .swiss-tagline {
+        font-size: 12px;
+        margin-top: 6px;
+    }
+
+    .screen {
+        height: calc(100vh - 100px);
+        border-width: 5px;
+    }
+
+    .tv-container {
+        padding: 5px;
+    }
+
+    .ad-section {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .ads-container {
+        padding: 8px;
+    }
+
+    .videos-container {
+        padding: 10px 8px;
+    }
+
+    .screen-wrapper {
+        padding-bottom: 56.25%; /* 16:9 on small screens */
+        border-width: 2px;
+    }
+
+    .screen-label {
+        font-size: 12px;
+        letter-spacing: 1px;
+        padding: 6px 12px;
+    }
+
+    .channel-spacer {
+        width: 50px;
+        min-width: 50px;
+        max-width: 50px;
+    }
+
+    .channel-number {
+        width: 50px;
+        min-width: 50px;
+        max-width: 50px;
+        font-size: 12px;
+        padding: 6px 2px;
+    }
+
+    .time-slot {
+        width: 90px;
+        font-size: 11px;
+    }
+
+    .show-block {
+        min-height: 35px;
+        font-size: 10px;
+        padding: 4px 6px;
+        min-width: 75px !important;
+    }
+
+    .guide-container {
+        height: calc(100vh - 200px);
+    }
+
+    .fullscreen-btn {
+        font-size: 14px;
+        padding: 3px 6px;
+    }
+
+    .clock {
+        font-size: 10px;
+        padding: 3px 6px;
+    }
+
+    /* Auto-collapse channel filters on small screens */
+    .controls {
+        margin: 5px 0;
+    }
+
+    .channel-filters {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+
+    .filter-item {
+        font-size: 11px;
+        padding: 4px;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .guide-container {
+        cursor: default;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .guide-container.dragging {
+        cursor: default;
+    }
+
+    /* Larger touch targets */
+    .fullscreen-btn {
+        padding: 8px 14px;
+        font-size: 18px;
+    }
+
+    .filter-item input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Disable hover effects on touch devices */
+    .show-block:hover {
+        transform: none;
+        background: linear-gradient(180deg, #2d4a8f 0%, #1e3670 100%);
+    }
+
+    .fullscreen-btn:hover {
+        transform: none;
+    }
+}
+
+/* General mobile responsive styles */
+@media screen and (max-width: 768px) {
+    .swiss-container {
+        padding: 25px 15px;
+    }
+
+    .swiss-title {
+        font-size: 42px;
+        letter-spacing: -1px;
+    }
+
+    .swiss-tagline {
+        font-size: 14px;
+        margin-top: 8px;
+    }
+
+    .controls {
+        width: 90%;
+        padding: 15px;
+    }
+
+    .controls-header h3 {
+        font-size: 20px;
+    }
+
+    .channel-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .videos-container {
+        padding: 15px 10px;
+    }
+
+    .screen-wrapper {
+        padding-bottom: 56.25%; /* 16:9 for mobile portrait */
+        border-width: 3px;
+    }
+
+    .screen-label {
+        font-size: 16px;
+        letter-spacing: 2px;
+    }
 }

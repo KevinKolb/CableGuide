@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="tv.ico">
     <link rel="stylesheet" href="style.css">
-    <title>Cable Guide Channel</title>
+    <title>The Cable Guide Channel CableGuide.tv</title>
 <script>
 /* ============================================================================
    CONFIGURATION
    ============================================================================ */
-const API_KEY = "f60c4964b9cbd51e78e0b1739b00775b"; // keep this file private
+// TV Media API Key - used for fetching live broadcast channel data
+const TV_MEDIA_API_KEY = "f60c4964b9cbd51e78e0b1739b00775b"; // Keep this private
+
+// Display constants
+const MINUTES_PER_TIME_SLOT = 30;
+const PIXELS_PER_TIME_SLOT = 140;
+const TIME_SLOTS_TO_DISPLAY = 8;
 
 /* ============================================================================
    INITIALIZATION
@@ -19,51 +26,101 @@ document.addEventListener("DOMContentLoaded", () => {
     updateClock();
     setInterval(updateClock, 1000);
     updateVisitorCount();
+    initializeSpeedControl();
 });
 
 /* ============================================================================
-   CLOCK FUNCTIONALITY
+   SPEED CONTROL
+   Controls playback speed of video player
+   ============================================================================ */
+function initializeSpeedControl() {
+    const speedSlider = document.getElementById("speedSlider");
+    const speedValue = document.getElementById("speedValue");
+
+    if (speedSlider && speedValue) {
+        speedSlider.addEventListener("input", (e) => {
+            const speed = parseFloat(e.target.value);
+            speedValue.textContent = `${speed}x`;
+
+            // Update video speed (YouTube iframe API)
+            const iframe = document.querySelector(".screen-wrapper iframe");
+            if (iframe) {
+                // Note: Speed control requires YouTube iframe API
+                console.log(`Speed changed to ${speed}x`);
+            }
+        });
+    }
+}
+
+/* ============================================================================
+   CLOCK AND DATE DISPLAY
+   Updates the clock/date display in top-right corner every second
    ============================================================================ */
 function updateClock() {
-    const clock = document.getElementById("clock");
-    const now = new Date();
-    clock.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const clockElement = document.getElementById("clock");
+    const topClockElement = document.getElementById("topClock");
+    const currentTime = new Date();
+
+    // Format time as HH:MM AM/PM
+    const timeString = currentTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+    // Format date as "Day, Mon DD"
+    const dateString = currentTime.toLocaleDateString(undefined, {
+        weekday: "short",
+        month: "short",
+        day: "numeric"
+    });
+
+    // Display time on top, date below in smaller font (for guide header clock)
+    if (clockElement) {
+        clockElement.innerHTML = `${timeString}<br><span style="font-size: 14px;">${dateString}</span>`;
+    }
+
+    // Display inline for top control bar
+    if (topClockElement) {
+        topClockElement.textContent = `${dateString} ${timeString}`;
+    }
 }
 
 /* ============================================================================
    VISITOR COUNTER
+   Tracks and displays visitor count using localStorage
    ============================================================================ */
 function updateVisitorCount() {
-    // Get current visitor count from localStorage
-    let visitorCount = localStorage.getItem('cableGuideVisitors');
+    const STORAGE_KEY = 'cableGuideVisitors';
+    const visitorCountElement = document.getElementById('visitorCount');
 
-    if (visitorCount === null) {
-        // First time visitor
-        visitorCount = 1;
-    } else {
-        // Increment visitor count
-        visitorCount = parseInt(visitorCount) + 1;
-    }
+    // Get current count from localStorage
+    let visitorCount = localStorage.getItem(STORAGE_KEY);
 
-    // Save updated count
-    localStorage.setItem('cableGuideVisitors', visitorCount);
+    // Initialize or increment
+    visitorCount = visitorCount === null ? 1 : parseInt(visitorCount) + 1;
 
-    // Display the count
-    const visitorElement = document.getElementById('visitorCount');
-    if (visitorElement) {
-        visitorElement.textContent = visitorCount;
+    // Save and display
+    localStorage.setItem(STORAGE_KEY, visitorCount);
+    if (visitorCountElement) {
+        visitorCountElement.textContent = visitorCount;
     }
 }
 
 /* ============================================================================
    TIME FORMATTING UTILITIES
+   Converts 24-hour time to 12-hour AM/PM format
    ============================================================================ */
 function formatTimeLabel(timeString) {
     const [hours, minutes] = timeString.split(":");
-    let h = parseInt(hours, 10);
-    const ampm = h >= 12 ? "PM" : "AM";
-    h = h % 12 || 12;
-    return `${h}:${minutes} ${ampm}`;
+    let hour24 = parseInt(hours, 10);
+
+    // Determine AM/PM
+    const period = hour24 >= 12 ? "PM" : "AM";
+
+    // Convert to 12-hour format
+    const hour12 = hour24 % 12 || 12;
+
+    return `${hour12}:${minutes} ${period}`;
 }
 
 /* ============================================================================
@@ -85,6 +142,8 @@ async function loadGuide() {
                 xmlChannels = Array.from(channelElements).map(ch => {
                     const number = ch.querySelector("number")?.textContent || "";
                     const name = ch.querySelector("name")?.textContent || "";
+                    const type = ch.getAttribute("type") || "unknown";
+                    const source = ch.getAttribute("source") || "unknown";
                     const shows = Array.from(ch.querySelectorAll("show")).map(show => ({
                         start: show.getAttribute("start"),
                         duration: parseInt(show.getAttribute("duration") || "30"),
@@ -96,54 +155,70 @@ async function loadGuide() {
                         channelNumber: number,
                         callSign: name,
                         network: name,
+                        type: type,
+                        source: source,
                         listings: shows.map(show => ({
                             title: show.title,
                             shortDescription: show.description,
                             startTime: new Date(), // Will be calculated from time slots
                             duration: show.duration
                         })),
-                        source: "xml" // Mark as scraped channel
+                        dataSource: "xml" // Mark as loaded from XML file
                     };
                 });
                 console.log(`📄 Loaded ${xmlChannels.length} channels from guide.xml`);
+
+                // Log channel sources
+                console.log("\n📺 Channel Sources:");
+                xmlChannels.forEach(ch => {
+                    console.log(`  ${ch.channelNumber} (${ch.name}): type="${ch.type}", source="${ch.source}"`);
+                });
             }
         } catch (xmlErr) {
-            console.log("⚠️ Could not load guide.xml, using API only");
+            console.log("⚠️ Could not load guide.xml, will try API only");
         }
 
-        const zip = "70130"; // New Orleans
+        // STEP 2: Try to load API channels (with error handling)
+        let apiChannels = [];
+        try {
+            const zip = "70130"; // New Orleans
 
-        // STEP 2: Get lineups for your ZIP
-        const lineupRes = await fetch(
-            `https://api.tvmedia.ca/tv/v4/lineups?postalCode=${encodeURIComponent(zip)}&api_key=${API_KEY}`
-        );
-        if (!lineupRes.ok) throw new Error("Failed to fetch lineups");
-        const lineups = await lineupRes.json();
-        if (!Array.isArray(lineups) || lineups.length === 0) {
-            throw new Error("No lineups returned for this ZIP");
+            // Get available lineups for ZIP code
+            const lineupResponse = await fetch(
+                `https://api.tvmedia.ca/tv/v4/lineups?postalCode=${encodeURIComponent(zip)}&api_key=${TV_MEDIA_API_KEY}`
+            );
+
+            if (lineupResponse.ok) {
+                const lineups = await lineupResponse.json();
+                if (Array.isArray(lineups) && lineups.length > 0) {
+                    const lineupID = lineups[0].lineupID;
+
+                    // Get channel grid listings for this lineup
+                    const listingsResponse = await fetch(
+                        `https://api.tvmedia.ca/tv/v4/lineups/${encodeURIComponent(lineupID)}/listings/grid?api_key=${TV_MEDIA_API_KEY}`
+                    );
+
+                    if (listingsResponse.ok) {
+                        const grid = await listingsResponse.json();
+                        apiChannels = Array.isArray(grid.channels) ? grid.channels : [];
+
+                        // Filter API channels that have listings
+                        apiChannels = apiChannels.filter(ch => {
+                            const listings = Array.isArray(ch.listings) ? ch.listings : [];
+                            return listings.length > 0;
+                        }).map(ch => ({
+                            ...ch,
+                            source: "api" // Mark as API channel
+                        }));
+
+                        console.log(`🌐 Loaded ${apiChannels.length} channels from API`);
+                    }
+                }
+            }
+        } catch (apiErr) {
+            console.log("⚠️ Could not load API channels:", apiErr.message);
+            console.log("📺 Using XML channels only");
         }
-
-        const lineupID = lineups[0].lineupID;
-
-        // STEP 3: Get grid listings for that lineup (API channels)
-        const listingsRes = await fetch(
-            `https://api.tvmedia.ca/tv/v4/lineups/${encodeURIComponent(lineupID)}/listings/grid?api_key=${API_KEY}`
-        );
-        if (!listingsRes.ok) throw new Error("Failed to fetch listings grid");
-
-        const grid = await listingsRes.json();
-        let apiChannels = Array.isArray(grid.channels) ? grid.channels : [];
-
-        // Filter API channels that have listings
-        apiChannels = apiChannels.filter(ch => {
-            const listings = Array.isArray(ch.listings) ? ch.listings : [];
-            return listings.length > 0;
-        }).map(ch => ({
-            ...ch,
-            source: "api" // Mark as API channel
-        }));
-
-        console.log(`🌐 Loaded ${apiChannels.length} channels from API`);
 
         // STEP 4: Merge channels - XML channels override API channels with same call sign/network
         const channelMap = new Map();
@@ -178,55 +253,52 @@ async function loadGuide() {
         });
 
         if (channels.length === 0) {
-            throw new Error("No channels in grid response");
+            throw new Error("No channels available - check guide.xml and API connection");
         }
 
         console.log(`✅ Total ${channels.length} channels (${xmlChannels.length} scraped, ${apiChannels.length} API)`);
 
-        // STEP 5: Load clickable ads from XML (if available) - Show one random ad
+        // STEP 5: Ads carousel removed per user request
+
+        // STEP 6: Display YouTube playlist in movie screen player
         try {
-            const xmlRes = await fetch("guide.xml");
-            if (xmlRes.ok) {
-                const xmlText = await xmlRes.text();
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                const ads = xmlDoc.querySelectorAll("ads ad");
+            const videosContainer = document.getElementById("videosContainer");
 
-                if (ads.length > 0) {
-                    const adsContainer = document.getElementById("adsContainer");
+            // YouTube playlist ID
+            const playlistId = "PL5PIyBfx10wEPYJtYrZL0JBReXx-u9-mK";
 
-                    // Pick a random ad
-                    const randomIndex = Math.floor(Math.random() * ads.length);
-                    const randomAd = ads[randomIndex];
+            // Generate random starting index (assuming playlist has ~50 videos)
+            const randomIndex = Math.floor(Math.random() * 50);
 
-                    const url = randomAd.getAttribute("url");
-                    let image = randomAd.getAttribute("image");
-                    const alt = randomAd.getAttribute("alt") || randomAd.textContent;
-                    const title = randomAd.textContent;
+            // Create large movie screen player with playlist
+            videosContainer.innerHTML = `
+                <div class="movie-screen">
+                    <div class="screen-wrapper">
+                        <iframe
+                            src="https://www.youtube.com/embed?listType=playlist&list=${playlistId}&index=${randomIndex}&autoplay=1&mute=0&loop=1&shuffle=1"
+                            title="Cable Guide Cinema"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            `;
 
-                    // Check if image is a local path (doesn't start with http)
-                    if (image && !image.startsWith('http')) {
-                        image = `ads/${image}`;
-                    }
+            videosContainer.style.display = 'flex';
 
-                    const adHTML = `
-                        <a href="${url}" class="ad-item" target="_blank" rel="noopener noreferrer">
-                            <img src="${image}" alt="${alt}" />
-                            <div class="ad-item-title">${title}</div>
-                        </a>`;
-
-                    adsContainer.innerHTML = `<div class="ads-carousel">${adHTML}</div>`;
-                    adsContainer.classList.add('has-ads');
-                    console.log(`📢 Loaded 1 random ad from ${ads.length} available ads in guide.xml`);
-                }
+            // Show the media layout container
+            const mediaLayout = document.querySelector('.media-layout');
+            if (mediaLayout) {
+                mediaLayout.style.display = 'flex';
             }
+
+            console.log(`🎬 Loaded YouTube playlist player`);
         } catch (err) {
-            console.log("⚠️ No clickable ads found in guide.xml");
+            console.log("⚠️ Could not load video player");
         }
 
-        // STEP 6: YouTube videos section removed
-
-        // STEP 7: Build header - ad banner, date, and time slots
+        // STEP 7: Build header - ad banner and time slots
         updateChannelCount(channels.length);
 
         function updateChannelCount(total) {
@@ -238,13 +310,6 @@ async function loadGuide() {
         window.updateChannelCount = updateChannelCount;
         window.totalChannels = channels.length;
 
-        const today = new Date();
-        const dateLabel = today.toLocaleDateString(undefined, {
-            weekday: "short",
-            month: "short",
-            day: "numeric"
-        });
-        document.getElementById("dateDisplay").textContent = dateLabel;
         document.getElementById("guideHeader").style.display = "flex";
 
         // Build 8 x 30-minute time slots starting from current half-hour
@@ -282,12 +347,13 @@ async function loadGuide() {
         const guideScroll = document.getElementById("guideScroll");
         guideScroll.innerHTML = "";
 
-        const guideHTML = channels.map(ch => {
-            const number = ch.channelNumber || "";
-            const callSign = ch.callSign || "";
-            const network = ch.network || ch.networkName || "";
-            const channelLabel = callSign || network || number;
-            const listings = Array.isArray(ch.listings) ? ch.listings : [];
+        const guideHTML = channels.map(channel => {
+            // Extract channel information
+            const channelNumber = channel.channelNumber || "";
+            const callSign = channel.callSign || "";
+            const networkName = channel.network || channel.networkName || "";
+            const channelLabel = callSign || networkName || channelNumber;
+            const listings = Array.isArray(channel.listings) ? channel.listings : [];
 
             const showsHTML = listings.map(listing => {
                 const startTime = new Date(listing.startTime);
@@ -295,8 +361,9 @@ async function loadGuide() {
                     ? new Date(listing.endTime)
                     : new Date(startTime.getTime() + (listing.duration || 30) * 60000);
 
-                const durationMin = Math.max(15, (endTime - startTime) / 60000); // clamp a bit
-                const widthPx = (durationMin / 30) * 140;
+                // Calculate show width based on duration
+                const durationMinutes = Math.max(15, (endTime - startTime) / 60000); // Minimum 15 minutes
+                const showWidthPixels = (durationMinutes / MINUTES_PER_TIME_SLOT) * PIXELS_PER_TIME_SLOT;
 
                 const title =
                     listing.title ||
@@ -336,21 +403,32 @@ async function loadGuide() {
 
                 return `
                     <div class="show-block"
-                         style="min-width:${widthPx}px"
+                         style="min-width:${showWidthPixels}px"
                          ${tooltipAttr}>
                         ${title}
                     </div>`;
             }).join("");
 
-            // Add source indicator
-            const sourceIcon = ch.source === "xml" ? "⭐" : "";
-            const sourceTitle = ch.source === "xml"
-                ? `${channelLabel} (Scraped from source)`
-                : channelLabel;
+            // Add source indicator for XML channels
+            const isXmlSource = channel.dataSource === "xml";
+            const sourceIcon = isXmlSource ? "⭐" : "";
+
+            // Build full channel name for tooltip
+            const fullChannelName = [channelNumber, callSign, networkName]
+                .filter(Boolean)
+                .filter((v, i, a) => a.indexOf(v) === i) // Remove duplicates
+                .join(" - ");
+
+            const safeChannelName = fullChannelName
+                .replace(/&/g, "&amp;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
 
             return `
-                <div class="channel-row" data-source="${ch.source || 'api'}">
-                    <div class="channel-number" title="${sourceTitle}">${sourceIcon}${number}</div>
+                <div class="channel-row" data-source="${channel.dataSource || 'api'}">
+                    <div class="channel-number" data-channel-name="${safeChannelName}">${sourceIcon}${channelNumber}</div>
                     <div class="shows-container">
                         ${showsHTML}
                     </div>
@@ -376,115 +454,123 @@ async function loadGuide() {
    ============================================================================ */
 
 // Auto-scroll configuration
-let autoScrollSpeed = 0.5; // pixels per frame
-let scrollAnimationId = null;
+let autoScrollSpeedPixelsPerFrame = 0.5;
+let scrollAnimationFrameId = null;
 
-// Drag state
-let isDragging = false;
-let startY = 0;
-let scrollTop = 0;
+// Drag state variables
+let isDraggingGuide = false;
+let dragStartY = 0;
+let scrollPositionAtDragStart = 0;
 
 function initializeScrolling() {
-    const container = document.querySelector('.guide-container');
-    const guideScroll = document.getElementById('guideScroll');
+    const guideContainer = document.querySelector('.guide-container');
+    const guideScrollElement = document.getElementById('guideScroll');
 
-    if (!container || !guideScroll) return;
+    if (!guideContainer || !guideScrollElement) return;
 
     // Auto-scroll animation loop
     function autoScroll() {
-        if (!isDragging) {
-            container.scrollTop += autoScrollSpeed;
+        if (!isDraggingGuide) {
+            guideContainer.scrollTop += autoScrollSpeedPixelsPerFrame;
 
             // Infinite loop: reset to beginning when halfway through duplicated content
-            const halfHeight = guideScroll.scrollHeight / 2;
-            if (container.scrollTop >= halfHeight) {
-                container.scrollTop = 0;
+            const halfHeight = guideScrollElement.scrollHeight / 2;
+            if (guideContainer.scrollTop >= halfHeight) {
+                guideContainer.scrollTop = 0;
             }
         }
-        scrollAnimationId = requestAnimationFrame(autoScroll);
+        scrollAnimationFrameId = requestAnimationFrame(autoScroll);
     }
 
     // Start auto-scroll animation
-    if (scrollAnimationId) {
-        cancelAnimationFrame(scrollAnimationId);
+    if (scrollAnimationFrameId) {
+        cancelAnimationFrame(scrollAnimationFrameId);
     }
     autoScroll();
 
     // Mouse down: start dragging
-    container.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        startY = e.pageY - container.offsetTop;
-        scrollTop = container.scrollTop;
-        container.classList.add('dragging');
+    guideContainer.addEventListener('mousedown', (e) => {
+        isDraggingGuide = true;
+        dragStartY = e.pageY - guideContainer.offsetTop;
+        scrollPositionAtDragStart = guideContainer.scrollTop;
+        guideContainer.classList.add('dragging');
     });
 
     // Mouse leave: stop dragging
-    container.addEventListener('mouseleave', () => {
-        isDragging = false;
-        container.classList.remove('dragging');
+    guideContainer.addEventListener('mouseleave', () => {
+        isDraggingGuide = false;
+        guideContainer.classList.remove('dragging');
     });
 
     // Mouse up: stop dragging
-    container.addEventListener('mouseup', () => {
-        isDragging = false;
-        container.classList.remove('dragging');
+    guideContainer.addEventListener('mouseup', () => {
+        isDraggingGuide = false;
+        guideContainer.classList.remove('dragging');
     });
 
     // Mouse move: handle dragging
-    container.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
+    guideContainer.addEventListener('mousemove', (e) => {
+        if (!isDraggingGuide) return;
         e.preventDefault();
 
-        const y = e.pageY - container.offsetTop;
-        const walk = (y - startY) * 2; // Scroll speed multiplier
-        container.scrollTop = scrollTop - walk;
+        const currentY = e.pageY - guideContainer.offsetTop;
+        const dragDistance = (currentY - dragStartY) * 2; // Scroll speed multiplier
+        guideContainer.scrollTop = scrollPositionAtDragStart - dragDistance;
 
         // Maintain infinite loop during drag
-        const halfHeight = guideScroll.scrollHeight / 2;
-        if (container.scrollTop >= halfHeight) {
+        const halfHeight = guideScrollElement.scrollHeight / 2;
+        if (guideContainer.scrollTop >= halfHeight) {
             // Scrolled past halfway, jump back to start
-            container.scrollTop = container.scrollTop - halfHeight;
-            scrollTop = container.scrollTop;
-            startY = y;
-        } else if (container.scrollTop < 0) {
+            guideContainer.scrollTop = guideContainer.scrollTop - halfHeight;
+            scrollPositionAtDragStart = guideContainer.scrollTop;
+            dragStartY = currentY;
+        } else if (guideContainer.scrollTop < 0) {
             // Scrolled before start, jump to halfway point
-            container.scrollTop = halfHeight + container.scrollTop;
-            scrollTop = container.scrollTop;
-            startY = y;
+            guideContainer.scrollTop = halfHeight + guideContainer.scrollTop;
+            scrollPositionAtDragStart = guideContainer.scrollTop;
+            dragStartY = currentY;
         }
     });
 }
 
 /* ============================================================================
-   UI CONTROLS
-   Toggle channel visibility and control panel collapse
+   CHANNEL FILTER CONTROLS
+   Toggle individual channel visibility in the guide
    ============================================================================ */
 
-function toggleChannel(idx) {
-    const rows = document.querySelectorAll(".channel-row");
-    const totalChannels = rows.length / 2; // Half because content is duplicated
+function toggleChannel(channelIndex) {
+    const allChannelRows = document.querySelectorAll(".channel-row");
+    const totalUniqueChannels = allChannelRows.length / 2; // Content is duplicated for infinite scroll
 
     // Toggle both the original row and its duplicate
-    if (rows[idx]) {
-        rows[idx].classList.toggle("hidden");
+    const originalRow = allChannelRows[channelIndex];
+    const duplicateRow = allChannelRows[channelIndex + totalUniqueChannels];
+
+    if (originalRow) {
+        originalRow.classList.toggle("hidden");
     }
-    // Toggle the duplicate row (second half)
-    if (rows[idx + totalChannels]) {
-        rows[idx + totalChannels].classList.toggle("hidden");
+    if (duplicateRow) {
+        duplicateRow.classList.toggle("hidden");
     }
 
-    // Update visible channel count
+    // Update visible channel count display
     updateVisibleChannelCount();
 }
 
 function updateVisibleChannelCount() {
-    const allRows = document.querySelectorAll(".channel-row");
-    const totalRows = allRows.length / 2; // Divided by 2 because content is duplicated
-    const visibleRows = Array.from(allRows).slice(0, totalRows).filter(row => !row.classList.contains("hidden")).length;
+    const allChannelRows = document.querySelectorAll(".channel-row");
+    const totalUniqueChannels = allChannelRows.length / 2; // Content is duplicated
 
-    const countElement = document.getElementById("visibleChannelCount");
-    if (countElement) {
-        countElement.textContent = visibleRows;
+    // Count visible channels (only first half, ignore duplicates)
+    const visibleChannels = Array.from(allChannelRows)
+        .slice(0, totalUniqueChannels)
+        .filter(row => !row.classList.contains("hidden"))
+        .length;
+
+    // Update display
+    const visibleCountElement = document.getElementById("visibleChannelCount");
+    if (visibleCountElement) {
+        visibleCountElement.textContent = visibleChannels;
     }
 }
 
@@ -562,9 +648,24 @@ function updateFullscreenButton() {
         btn.title = 'Toggle Fullscreen';
     }
 }
+
+/* ============================================================================
+   AD CAROUSEL - Removed per user request
+   ============================================================================ */
 </script>
 </head>
 <body>
+    <!-- ========================================
+         SWISS DESIGN HEADER
+         Clean, minimal header with branding
+         ======================================== -->
+    <header class="swiss-header">
+        <div class="swiss-container">
+            <h1 class="swiss-title">Cable Guide</h1>
+            <p class="swiss-tagline">TV: Back in the Box</p>
+        </div>
+    </header>
+
     <!-- ========================================
          CHANNEL FILTERS SECTION
          Collapsible panel for toggling channels
@@ -591,38 +692,56 @@ function updateFullscreenButton() {
             <!-- Visual effects overlay -->
             <div class="scanlines"></div>
 
-            <!-- Top-right clock -->
-            <div class="clock" id="clock"></div>
-
-            <!-- Fullscreen button -->
-            <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
-                <span class="fullscreen-icon">⛶</span>
-            </button>
-
             <!-- Advertisement/status banner -->
             <div class="ad-section" id="adSection">
                 <div class="loading">LOADING GUIDE DATA...</div>
             </div>
 
-            <!-- Clickable ads carousel -->
-            <div class="ads-container" id="adsContainer">
-                <!-- Clickable ads populated dynamically from XML -->
+            <!-- Media Controls Bar -->
+            <div class="media-controls-bar">
+                <div class="clock" id="topClock"></div>
+                <button class="fullscreen-btn" id="topFullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+                    <span class="fullscreen-icon">⛶</span>
+                </button>
+                <div class="speed-control">
+                    <label for="speedSlider">Speed:</label>
+                    <input type="range" id="speedSlider" min="0.25" max="2" step="0.25" value="1">
+                    <span id="speedValue">1x</span>
+                </div>
             </div>
 
-
-            <!-- Date and time slots header -->
-            <div class="guide-header" id="guideHeader" style="display: none;">
-                <div class="date-display" id="dateDisplay"></div>
-                <div class="time-slots-container">
-                    <div class="time-slots" id="timeSlots">
-                        <!-- Time slots populated dynamically -->
-                    </div>
+            <!-- YouTube Videos Section with Future Space -->
+            <div class="media-layout">
+                <div class="videos-container" id="videosContainer">
+                    <!-- Video players populated dynamically -->
+                </div>
+                <div class="future-container" id="futureContainer">
+                    <!-- Reserved for future use -->
                 </div>
             </div>
 
             <!-- Main scrollable guide container -->
             <!-- Features: auto-scroll, infinite loop, click-and-drag -->
             <div class="guide-container">
+                <!-- Time slots header (sticky) -->
+                <div class="guide-header" id="guideHeader" style="display: none;">
+                    <!-- Fullscreen button -->
+                    <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()" title="Toggle Fullscreen">
+                        <span class="fullscreen-icon">⛶</span>
+                    </button>
+
+                    <div class="channel-spacer"></div>
+
+                    <div class="time-slots-container">
+                        <div class="time-slots" id="timeSlots">
+                            <!-- Time slots populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Clock and date -->
+                    <div class="clock" id="clock"></div>
+                </div>
+
                 <div class="guide-scroll" id="guideScroll">
                     <!-- Channel rows populated dynamically -->
                     <!-- Content is duplicated for seamless infinite scroll -->

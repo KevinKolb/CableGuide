@@ -4,9 +4,6 @@
   <ad>
     <text>Call 1-800-CABLE-TV for Premium Channels!</text>
   </ad>
-  <ads>
-    <ad url="https://www.mentos.com" image="https://i.ytimg.com/vi/u4hlzRNu3uE/maxresdefault.jpg" alt="Mentos - The Freshmaker">Mentos</ad>
-  </ads>
   <youtube>
     <video id="dQw4w9WgXcQ">Featured Music Video</video>
     <video id="jNQXAC9IVRw">Me at the zoo</video>
@@ -23,7 +20,7 @@
     <time>11:30 AM</time>
   </timeslots>
   <channels>
-    <channel>
+    <channel type="broadcast" source="CNN">
       <number>CNN</number>
       <name>CNN</name>
       <shows>
@@ -31,7 +28,7 @@
         <show start="6:00 AM" duration="180" description='Morning news with the latest headlines.'>CNN News Central</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="broadcast" source="ESPN">
       <number>ESPN</number>
       <name>ESPN</name>
       <shows>
@@ -41,7 +38,7 @@
         <show start="2:00 PM" duration="120" description='Live college football coverage.'>College Football</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="streaming" source="Netflix">
       <number>NFLX1</number>
       <name>Netflix 1</name>
       <shows>
@@ -50,7 +47,7 @@
         <show start="2:00 PM" duration="120" description='A detective investigates a murder mystery on a private island.'>Movie: Glass Onion</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="streaming" source="HBO Max">
       <number>HBO1</number>
       <name>HBO 1</name>
       <shows>
@@ -60,7 +57,7 @@
         <show start="2:00 PM" duration="120" description='Epic sci-fi sequel following Paul Atreides&amp;apos; journey.'>Movie: Dune Part Two</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="streaming" source="Hulu">
       <number>HULU1</number>
       <name>Hulu 1</name>
       <shows>
@@ -70,7 +67,7 @@
         <show start="2:00 PM" duration="90" description='Fantasy comedy about a young woman brought back to life.'>Movie: Poor Things</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="streaming" source="Apple TV+">
       <number>ATV+</number>
       <name>Apple TV+</name>
       <shows>
@@ -79,7 +76,7 @@
         <show start="2:00 PM" duration="120" description='Crime drama about the Osage Nation murders.'>Movie: Killers of the Flower Moon</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="streaming" source="Paramount+">
       <number>P+</number>
       <name>Paramount+</name>
       <shows>
@@ -89,7 +86,7 @@
         <show start="2:00 PM" duration="120" description='Action sequel following Pete &amp;apos;Maverick&amp;apos; Mitchell.'>Movie: Top Gun: Maverick</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="streaming" source="Peacock">
       <number>PCOK</number>
       <name>Peacock</name>
       <shows>
@@ -99,7 +96,7 @@
         <show start="2:00 PM" duration="90" description='Biographical thriller about J. Robert Oppenheimer.'>Movie: Oppenheimer</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="broadcast" source="NBC">
       <number>NBC</number>
       <name>NBC</name>
       <shows>
@@ -109,7 +106,7 @@
         <show start="3:00 PM" duration="60" description='Talk show with Kelly Clarkson.'>The Kelly Clarkson Show</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="broadcast" source="ABC">
       <number>ABC</number>
       <name>ABC Network</name>
       <shows>
@@ -119,7 +116,7 @@
         <show start="3:00 PM" duration="60" description='Classic game show with trivia questions.'>Jeopardy!</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="broadcast" source="FOX">
       <number>FOX</number>
       <name>FOX</name>
       <shows>
@@ -129,7 +126,7 @@
         <show start="2:00 PM" duration="120" description='Sports coverage and highlights.'>FOX Sports</show>
       </shows>
     </channel>
-    <channel>
+    <channel type="broadcast" source="PBS">
       <number>PBS</number>
       <name>PBS</name>
       <shows>
