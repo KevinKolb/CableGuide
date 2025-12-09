@@ -1,28 +1,34 @@
 <?xml version="1.0" ?>
 <guide>
-  <date>12/08/25</date>
+  <date>12/09/25</date>
   <ad>
     <text>Call 1-800-CABLE-TV for Premium Channels!</text>
   </ad>
+  <ads>
+    <ad url="https://www.mentos.com" image="https://i.ytimg.com/vi/u4hlzRNu3uE/maxresdefault.jpg" alt="Mentos - The Freshmaker">Mentos</ad>
+  </ads>
+  <youtube>
+    <video id="dQw4w9WgXcQ">Featured Music Video</video>
+    <video id="jNQXAC9IVRw">Me at the zoo</video>
+    <video id="9bZkp7q19f0">Gangnam Style</video>
+  </youtube>
   <timeslots>
-    <time>11:00 PM</time>
-    <time>11:30 PM</time>
-    <time>12:00 AM</time>
-    <time>12:30 AM</time>
-    <time>1:00 AM</time>
-    <time>1:30 AM</time>
-    <time>2:00 AM</time>
-    <time>2:30 AM</time>
+    <time>8:00 AM</time>
+    <time>8:30 AM</time>
+    <time>9:00 AM</time>
+    <time>9:30 AM</time>
+    <time>10:00 AM</time>
+    <time>10:30 AM</time>
+    <time>11:00 AM</time>
+    <time>11:30 AM</time>
   </timeslots>
   <channels>
     <channel>
       <number>CNN</number>
       <name>CNN</name>
       <shows>
-        <show start="8:00 PM" duration="60" description='Prime time news and interviews with Anderson Cooper.'>Anderson Cooper 360</show>
-        <show start="9:00 PM" duration="60" description='Prime time news and interviews with Anderson Cooper.'>Anderson Cooper 360</show>
-        <show start="10:00 PM" duration="60" description='Late night news coverage and analysis.'>CNN Tonight</show>
-        <show start="11:00 PM" duration="60" description='Late night news coverage and analysis.'>CNN Tonight</show>
+        <show start="4:00 AM" duration="120" description='Early morning news to start your day.'>Early Start</show>
+        <show start="6:00 AM" duration="180" description='Morning news with the latest headlines.'>CNN News Central</show>
       </shows>
     </channel>
     <channel>
