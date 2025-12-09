@@ -1,0 +1,137 @@
+<?xml version="1.0" ?>
+<guide>
+  <date>12/08/25</date>
+  <ad>
+    <text>Call 1-800-CABLE-TV for Premium Channels!</text>
+  </ad>
+  <timeslots>
+    <time>10:00 PM</time>
+    <time>10:30 PM</time>
+    <time>11:00 PM</time>
+    <time>11:30 PM</time>
+    <time>12:00 AM</time>
+    <time>12:30 AM</time>
+    <time>1:00 AM</time>
+    <time>1:30 AM</time>
+  </timeslots>
+  <channels>
+    <channel>
+      <number>CNN</number>
+      <name>CNN</name>
+      <shows>
+        <show start="8:00 PM" duration="60" description="Prime time news and interviews with Anderson Cooper.">Anderson Cooper 360</show>
+        <show start="9:00 PM" duration="60" description="Prime time news and interviews with Anderson Cooper.">Anderson Cooper 360</show>
+        <show start="10:00 PM" duration="60" description="Late night news coverage and analysis.">CNN Tonight</show>
+        <show start="11:00 PM" duration="60" description="Late night news coverage and analysis.">CNN Tonight</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>ESPN</number>
+      <name>ESPN</name>
+      <shows>
+        <show start="12:00 PM" duration="30" description="Your home for sports news, highlights, and analysis.">SportsCenter</show>
+        <show start="12:30 PM" duration="30" description="NFL news, analysis, and insider information.">NFL Live</show>
+        <show start="1:00 PM" duration="60" description="Breaking NBA news and game previews.">NBA Today</show>
+        <show start="2:00 PM" duration="120" description="Live college football coverage.">College Football</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>NFLX1</number>
+      <name>Netflix 1</name>
+      <shows>
+        <show start="12:00 PM" duration="60" description="Sci-fi horror series set in 1980s Indiana.">Stranger Things</show>
+        <show start="1:00 PM" duration="60" description="Drama chronicling the reign of Queen Elizabeth II.">The Crown</show>
+        <show start="2:00 PM" duration="120" description="A detective investigates a murder mystery on a private island.">Movie: Glass Onion</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>HBO1</number>
+      <name>HBO 1</name>
+      <shows>
+        <show start="12:00 PM" duration="60" description="Prequel to Game of Thrones set 200 years earlier.">House of the Dragon</show>
+        <show start="1:00 PM" duration="30" description="Satirical news and current events with John Oliver.">Last Week Tonight</show>
+        <show start="1:30 PM" duration="30" description="Political talk show with Bill Maher.">Real Time with Bill Maher</show>
+        <show start="2:00 PM" duration="120" description="Epic sci-fi sequel following Paul Atreides' journey.">Movie: Dune Part Two</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>HULU1</number>
+      <name>Hulu 1</name>
+      <shows>
+        <show start="12:00 PM" duration="60" description="Dystopian drama based on Margaret Atwood's novel.">The Handmaid's Tale</show>
+        <show start="1:00 PM" duration="30" description="Mystery comedy about true crime podcasters.">Only Murders in the Building</show>
+        <show start="1:30 PM" duration="30" description="Drama about a chef running a Chicago sandwich shop.">The Bear</show>
+        <show start="2:00 PM" duration="90" description="Fantasy comedy about a young woman brought back to life.">Movie: Poor Things</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>ATV+</number>
+      <name>Apple TV+</name>
+      <shows>
+        <show start="12:00 PM" duration="60" description="Comedy about an American football coach in England.">Ted Lasso</show>
+        <show start="1:00 PM" duration="60" description="Sci-fi thriller about work-life separation technology.">Severance</show>
+        <show start="2:00 PM" duration="120" description="Crime drama about the Osage Nation murders.">Movie: Killers of the Flower Moon</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>P+</number>
+      <name>Paramount+</name>
+      <shows>
+        <show start="12:00 PM" duration="60" description="Western drama about the Dutton family ranch.">Yellowstone</show>
+        <show start="1:00 PM" duration="30" description="Sci-fi series exploring new worlds and civilizations.">Star Trek: Strange New Worlds</show>
+        <show start="1:30 PM" duration="30" description="Legal drama spin-off of The Good Wife.">The Good Fight</show>
+        <show start="2:00 PM" duration="120" description="Action sequel following Pete 'Maverick' Mitchell.">Movie: Top Gun: Maverick</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>PCOK</number>
+      <name>Peacock</name>
+      <shows>
+        <show start="12:00 PM" duration="30" description="Mockumentary sitcom about office workers.">The Office (Rerun)</show>
+        <show start="12:30 PM" duration="30" description="Comedy about a small-town parks department.">Parks and Recreation</show>
+        <show start="1:00 PM" duration="60" description="Mystery series about a woman who can detect lies.">Poker Face</show>
+        <show start="2:00 PM" duration="90" description="Biographical thriller about J. Robert Oppenheimer.">Movie: Oppenheimer</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>NBC</number>
+      <name>NBC</name>
+      <shows>
+        <show start="12:00 PM" duration="60" description="Long-running daytime soap opera.">Days of Our Lives</show>
+        <show start="1:00 PM" duration="60" description="Midday news and current events.">NBC News Daily</show>
+        <show start="2:00 PM" duration="60" description="Evening news with Lester Holt.">NBC Nightly News</show>
+        <show start="3:00 PM" duration="60" description="Talk show with Kelly Clarkson.">The Kelly Clarkson Show</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>ABC</number>
+      <name>ABC Network</name>
+      <shows>
+        <show start="12:00 PM" duration="60" description="Long-running medical drama and soap opera.">General Hospital</show>
+        <show start="1:00 PM" duration="60" description="Afternoon news and lifestyle show.">GMA3: What You Need to Know</show>
+        <show start="2:00 PM" duration="60" description="Breaking news and current events.">ABC News Live</show>
+        <show start="3:00 PM" duration="60" description="Classic game show with trivia questions.">Jeopardy!</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>FOX</number>
+      <name>FOX</name>
+      <shows>
+        <show start="12:00 PM" duration="30" description="Animated sitcom about the Simpson family.">The Simpsons</show>
+        <show start="12:30 PM" duration="30" description="Animated comedy about a family-run restaurant.">Bob's Burgers</show>
+        <show start="1:00 PM" duration="60" description="NFL football coverage and analysis.">NFL on FOX</show>
+        <show start="2:00 PM" duration="120" description="Sports coverage and highlights.">FOX Sports</show>
+      </shows>
+    </channel>
+    <channel>
+      <number>PBS</number>
+      <name>PBS</name>
+      <shows>
+        <show start="12:00 PM" duration="60" description="In-depth news coverage and analysis.">PBS NewsHour</show>
+        <show start="1:00 PM" duration="60" description="British dramas and period pieces.">Masterpiece</show>
+        <show start="2:00 PM" duration="60" description="Science documentaries exploring the natural world.">NOVA</show>
+        <show start="3:00 PM" duration="60" description="Appraisals of antiques and collectibles.">Antiques Roadshow</show>
+      </shows>
+    </channel>
+  </channels>
+</guide>

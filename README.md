@@ -1,3 +1,3 @@
 # CableGuide
 
-A cable management and guide application.
+TV Guide.
