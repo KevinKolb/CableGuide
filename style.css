@@ -624,3 +624,15 @@ body {
     text-shadow: 0 0 15px rgba(61,90,254,0.8);
     text-decoration: underline;
 }
+
+.visitor-count {
+    margin-top: 8px !important;
+    color: #ffd700;
+    font-size: 13px;
+}
+
+.visitor-count #visitorCount {
+    font-weight: bold;
+    color: #3d5afe;
+    text-shadow: 0 0 10px rgba(61,90,254,0.6);
+}

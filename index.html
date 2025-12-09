@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadGuide();
     updateClock();
     setInterval(updateClock, 1000);
+    updateVisitorCount();
 });
 
 /* ============================================================================
@@ -27,6 +28,31 @@ function updateClock() {
     const clock = document.getElementById("clock");
     const now = new Date();
     clock.textContent = now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+/* ============================================================================
+   VISITOR COUNTER
+   ============================================================================ */
+function updateVisitorCount() {
+    // Get current visitor count from localStorage
+    let visitorCount = localStorage.getItem('cableGuideVisitors');
+
+    if (visitorCount === null) {
+        // First time visitor
+        visitorCount = 1;
+    } else {
+        // Increment visitor count
+        visitorCount = parseInt(visitorCount) + 1;
+    }
+
+    // Save updated count
+    localStorage.setItem('cableGuideVisitors', visitorCount);
+
+    // Display the count
+    const visitorElement = document.getElementById('visitorCount');
+    if (visitorElement) {
+        visitorElement.textContent = visitorCount;
+    }
 }
 
 /* ============================================================================
@@ -611,6 +637,7 @@ function updateFullscreenButton() {
          ======================================== -->
     <footer class="page-footer">
         <p>Vibe Coded by <a href="mailto:kevinmkolb@gmail.com">Kevin Kolb</a></p>
+        <p class="visitor-count">Visitors: <span id="visitorCount">0</span></p>
     </footer>
 </body>
 </html>
