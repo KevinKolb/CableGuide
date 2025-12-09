@@ -640,11 +640,32 @@
                     const channelNum = channel.querySelector('number').textContent;
                     const shows = channel.querySelectorAll('shows show');
 
-                    const showsHTML = Array.from(shows).map(show => {
-                        const duration = parseInt(show.getAttribute('duration'));
-                        const originalStartTime = show.getAttribute('start');
-                        const showName = show.textContent;
-                        const description = show.getAttribute('description') || '';
+const showsHTML = Array.from(shows).map(show => {
+    const duration = parseInt(show.getAttribute('duration'));
+    const originalStartTime = show.getAttribute('start');
+    const showName = show.textContent;
+    const description = show.getAttribute('description') || '';
+
+    // Adjust show time to current time window
+    const adjustedStartTime = adjustShowTime(originalStartTime, duration);
+    const isCurrent = isShowCurrent(adjustedStartTime, duration);
+    const currentClass = isCurrent ? ' current' : '';
+
+    // Width in pixels (200px per 30 minutes)
+    const widthPx = (duration / 30) * 200;
+
+    // Tooltip-safe escaping
+    const safeDescription = description
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+    const dataAttr = description ? ` data-description="${safeDescription}"` : '';
+
+    return `<div class="show-block${currentClass}" style="width: ${widthPx}px"${dataAttr}>${showName}</div>`;
+}).join('');
 
                         // Adjust show time to current time window
                         const adjustedStartTime = adjustShowTime(originalStartTime, duration);
@@ -654,8 +675,15 @@
                         // Calculate width in pixels for better alignment
                         const widthPx = (duration / 30) * 200; // 200px per 30min slot
 
-                        // Build data attribute for CSS tooltip (description only)
-                        const dataAttr = description ? ` data-description="${description.replace(/"/g, '&quot;')}"` : '';
+// Build safe HTML-escaped tooltip text
+const safeDescription = description
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+const dataAttr = description ? ` data-description="${safeDescription}"` : '';
 
                         return `<div class="show-block${currentClass}" style="width: ${widthPx}px"${dataAttr}>${showName}</div>`;
                     }).join('');
