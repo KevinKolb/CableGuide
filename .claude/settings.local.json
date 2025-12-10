@@ -1,14 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git fetch:*)",
-      "Bash(git remote:*)",
-      "Bash(gh repo create:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(git config:*)",
-      "Bash(cat:*)"
+      "Bash(python pull_cnn.py:*)",
+      "Bash(python:*)",
+      "Bash(ls:*)"
     ]
   }
 }

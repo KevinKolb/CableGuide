@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cable Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            line-height: 1.5;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        header {
+            border-bottom: 2px solid #1a1a1a;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        .meta {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .channel-filter {
+            margin: 2rem 0;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid #1a1a1a;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: #1a1a1a;
+            color: white;
+        }
+
+        .channel-section {
+            margin-bottom: 3rem;
+        }
+
+        .channel-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .channel-icon {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+        }
+
+        .channel-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+        }
+
+        .date-group {
+            margin-bottom: 2rem;
+        }
+
+        .date-header {
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .program-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .program {
+            background: white;
+            border: 1px solid #e0e0e0;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 1.5rem;
+            transition: border-color 0.2s;
+        }
+
+        .program:hover {
+            border-color: #1a1a1a;
+        }
+
+        .program-time {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #666;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .program-time .time-range {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .program-time .duration {
+            display: block;
+            font-size: 0.75rem;
+            color: #999;
+            font-weight: 400;
+        }
+
+        .program-content {
+            min-width: 0;
+        }
+
+        .program-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: #1a1a1a;
+        }
+
+        .program-desc {
+            font-size: 0.875rem;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .now-indicator {
+            display: inline-block;
+            background: #ff0000;
+            color: white;
+            padding: 0.125rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 0;
+            font-size: 0.875rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .error {
+            background: #ff0000;
+            color: white;
+            padding: 1rem;
+            margin: 2rem 0;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .program {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .channel-name {
+                font-size: 1.25rem;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Cable Guide</h1>
+            <div class="meta" id="current-time"></div>
+            <div class="meta" id="meta-info">Loading...</div>
+        </header>
+
+        <div class="channel-filter" id="channel-filter">
+            <!-- Filter buttons will be added here -->
+        </div>
+
+        <div id="guide-content">
+            <div class="loading">Loading guide data...</div>
+        </div>
+    </div>
+
+    <script>
+        // Parse XMLTV time format: YYYYMMDDHHmmss +TZTZ
+        function parseXMLTVTime(timeStr) {
+            const year = parseInt(timeStr.substring(0, 4));
+            const month = parseInt(timeStr.substring(4, 6)) - 1;
+            const day = parseInt(timeStr.substring(6, 8));
+            const hour = parseInt(timeStr.substring(8, 10));
+            const minute = parseInt(timeStr.substring(10, 12));
+            const second = parseInt(timeStr.substring(12, 14));
+
+            return new Date(year, month, day, hour, minute, second);
+        }
+
+        // Format time for display
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        // Format date for display
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        // Get date key for grouping (use local date to avoid timezone issues)
+        function getDateKey(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Calculate duration in minutes
+        function getDuration(start, stop) {
+            const minutes = Math.round((stop - start) / (1000 * 60));
+            if (minutes < 60) {
+                return `${minutes}min`;
+            }
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return mins > 0 ? `${hours}h ${mins}min` : `${hours}h`;
+        }
+
+        // Check if program is airing now
+        function isAiringNow(start, stop) {
+            const now = new Date();
+            return now >= start && now <= stop;
+        }
+
+        // Load and parse guide.xml
+        async function loadGuide() {
+            try {
+                const response = await fetch('guide.xml');
+                if (!response.ok) {
+                    throw new Error('Failed to load guide.xml');
+                }
+
+                const xmlText = await response.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+                // Check for parsing errors
+                const parserError = xmlDoc.querySelector('parsererror');
+                if (parserError) {
+                    throw new Error('Invalid XML format');
+                }
+
+                return xmlDoc;
+            } catch (error) {
+                document.getElementById('guide-content').innerHTML =
+                    `<div class="error">Error loading guide: ${error.message}</div>`;
+                throw error;
+            }
+        }
+
+        // Parse channels
+        function parseChannels(xmlDoc) {
+            const channels = new Map();
+            const channelElements = xmlDoc.querySelectorAll('channel');
+
+            channelElements.forEach(channel => {
+                const id = channel.getAttribute('id');
+                const name = channel.querySelector('display-name')?.textContent || id;
+                const icon = channel.querySelector('icon')?.getAttribute('src') || '';
+
+                channels.set(id, { id, name, icon });
+            });
+
+            return channels;
+        }
+
+        // Parse programs
+        function parsePrograms(xmlDoc) {
+            const programs = [];
+            const programElements = xmlDoc.querySelectorAll('programme');
+
+            programElements.forEach(prog => {
+                const channelId = prog.getAttribute('channel');
+                const start = parseXMLTVTime(prog.getAttribute('start'));
+                const stop = parseXMLTVTime(prog.getAttribute('stop'));
+                const title = prog.querySelector('title')?.textContent || 'Untitled';
+                const desc = prog.querySelector('desc')?.textContent || '';
+
+                programs.push({
+                    channelId,
+                    start,
+                    stop,
+                    title,
+                    desc
+                });
+            });
+
+            return programs;
+        }
+
+        // Group programs by channel and date
+        function groupPrograms(programs) {
+            const grouped = new Map();
+
+            programs.forEach(program => {
+                if (!grouped.has(program.channelId)) {
+                    grouped.set(program.channelId, new Map());
+                }
+
+                const channelGroup = grouped.get(program.channelId);
+                const dateKey = getDateKey(program.start);
+
+                if (!channelGroup.has(dateKey)) {
+                    channelGroup.set(dateKey, []);
+                }
+
+                channelGroup.get(dateKey).push(program);
+            });
+
+            // Sort programs by start time within each date
+            grouped.forEach(channelGroup => {
+                channelGroup.forEach(programs => {
+                    programs.sort((a, b) => a.start - b.start);
+                });
+            });
+
+            return grouped;
+        }
+
+        // Render channel filters
+        function renderFilters(channels) {
+            const filterContainer = document.getElementById('channel-filter');
+            filterContainer.innerHTML = '';
+
+            // All channels button
+            const allBtn = document.createElement('button');
+            allBtn.className = 'filter-btn active';
+            allBtn.textContent = 'All Channels';
+            allBtn.setAttribute('data-channel', 'all');
+            filterContainer.appendChild(allBtn);
+
+            // Individual channel buttons
+            channels.forEach(channel => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.textContent = channel.name;
+                btn.setAttribute('data-channel', channel.id);
+                filterContainer.appendChild(btn);
+            });
+
+            // Add click handlers
+            filterContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('filter-btn')) {
+                    // Update active state
+                    filterContainer.querySelectorAll('.filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+
+                    // Filter channels
+                    const channelId = e.target.getAttribute('data-channel');
+                    filterChannels(channelId);
+                }
+            });
+        }
+
+        // Filter channel sections
+        function filterChannels(channelId) {
+            const sections = document.querySelectorAll('.channel-section');
+            sections.forEach(section => {
+                if (channelId === 'all' || section.getAttribute('data-channel') === channelId) {
+                    section.classList.remove('hidden');
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+        }
+
+        // Render guide
+        function renderGuide(channels, groupedPrograms) {
+            const content = document.getElementById('guide-content');
+            content.innerHTML = '';
+
+            channels.forEach(channel => {
+                const channelPrograms = groupedPrograms.get(channel.id);
+                if (!channelPrograms || channelPrograms.size === 0) return;
+
+                const section = document.createElement('div');
+                section.className = 'channel-section';
+                section.setAttribute('data-channel', channel.id);
+
+                // Channel header
+                const header = document.createElement('div');
+                header.className = 'channel-header';
+
+                if (channel.icon) {
+                    const icon = document.createElement('img');
+                    icon.className = 'channel-icon';
+                    icon.src = channel.icon;
+                    icon.alt = channel.name;
+                    header.appendChild(icon);
+                }
+
+                const name = document.createElement('div');
+                name.className = 'channel-name';
+                name.textContent = channel.name;
+                header.appendChild(name);
+
+                section.appendChild(header);
+
+                // Sort dates
+                const sortedDates = Array.from(channelPrograms.keys()).sort();
+
+                // Render each date group
+                sortedDates.forEach(dateKey => {
+                    const programs = channelPrograms.get(dateKey);
+                    const dateGroup = document.createElement('div');
+                    dateGroup.className = 'date-group';
+
+                    const dateHeader = document.createElement('div');
+                    dateHeader.className = 'date-header';
+                    dateHeader.textContent = formatDate(programs[0].start);
+                    dateGroup.appendChild(dateHeader);
+
+                    const programList = document.createElement('div');
+                    programList.className = 'program-list';
+
+                    programs.forEach(program => {
+                        const programDiv = document.createElement('div');
+                        programDiv.className = 'program';
+
+                        const timeDiv = document.createElement('div');
+                        timeDiv.className = 'program-time';
+
+                        const timeRange = document.createElement('span');
+                        timeRange.className = 'time-range';
+                        timeRange.textContent = `${formatTime(program.start)} - ${formatTime(program.stop)}`;
+                        timeDiv.appendChild(timeRange);
+
+                        const duration = document.createElement('span');
+                        duration.className = 'duration';
+                        duration.textContent = getDuration(program.start, program.stop);
+                        timeDiv.appendChild(duration);
+
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'program-content';
+
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'program-title';
+                        titleDiv.textContent = program.title;
+
+                        if (isAiringNow(program.start, program.stop)) {
+                            const nowBadge = document.createElement('span');
+                            nowBadge.className = 'now-indicator';
+                            nowBadge.textContent = 'On Now';
+                            titleDiv.appendChild(nowBadge);
+                        }
+
+                        contentDiv.appendChild(titleDiv);
+
+                        if (program.desc) {
+                            const descDiv = document.createElement('div');
+                            descDiv.className = 'program-desc';
+                            descDiv.textContent = program.desc;
+                            contentDiv.appendChild(descDiv);
+                        }
+
+                        programDiv.appendChild(timeDiv);
+                        programDiv.appendChild(contentDiv);
+                        programList.appendChild(programDiv);
+                    });
+
+                    dateGroup.appendChild(programList);
+                    section.appendChild(dateGroup);
+                });
+
+                content.appendChild(section);
+            });
+
+            // Update meta info
+            const totalPrograms = Array.from(groupedPrograms.values())
+                .reduce((sum, channel) => {
+                    return sum + Array.from(channel.values())
+                        .reduce((s, progs) => s + progs.length, 0);
+                }, 0);
+
+            document.getElementById('meta-info').textContent =
+                `${channels.size} channel${channels.size !== 1 ? 's' : ''} · ${totalPrograms} programs`;
+        }
+
+        // Update current time display
+        function updateCurrentTime() {
+            const now = new Date();
+            const timeString = now.toLocaleString('en-US', {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            });
+            document.getElementById('current-time').textContent = timeString;
+        }
+
+        // Initialize
+        async function init() {
+            try {
+                // Update time immediately and then every second
+                updateCurrentTime();
+                setInterval(updateCurrentTime, 1000);
+
+                const xmlDoc = await loadGuide();
+                const channels = parseChannels(xmlDoc);
+                const programs = parsePrograms(xmlDoc);
+                const groupedPrograms = groupPrograms(programs);
+
+                renderFilters(channels);
+                renderGuide(channels, groupedPrograms);
+            } catch (error) {
+                console.error('Failed to initialize guide:', error);
+            }
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
