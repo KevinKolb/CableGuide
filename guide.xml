@@ -4,28 +4,39 @@
   <ad>
     <text>Call 1-800-CABLE-TV for Premium Channels!</text>
   </ad>
-  <youtube>
-    <video id="dQw4w9WgXcQ">Featured Music Video</video>
-    <video id="jNQXAC9IVRw">Me at the zoo</video>
-    <video id="9bZkp7q19f0">Gangnam Style</video>
-  </youtube>
   <timeslots>
-    <time>8:00 AM</time>
-    <time>8:30 AM</time>
-    <time>9:00 AM</time>
-    <time>9:30 AM</time>
-    <time>10:00 AM</time>
-    <time>10:30 AM</time>
-    <time>11:00 AM</time>
-    <time>11:30 AM</time>
+    <time>9:00 PM</time>
+    <time>9:30 PM</time>
+    <time>10:00 PM</time>
+    <time>10:30 PM</time>
+    <time>11:00 PM</time>
+    <time>11:30 PM</time>
+    <time>12:00 AM</time>
+    <time>12:30 AM</time>
   </timeslots>
   <channels>
+    <channel type="time" source="system">
+      <number>⏰</number>
+      <name>Time Reference</name>
+      <shows>
+        <show start="12:00 PM" duration="30">12:00 PM</show>
+        <show start="12:30 PM" duration="30">12:30 PM</show>
+        <show start="1:00 PM" duration="30">1:00 PM</show>
+        <show start="1:30 PM" duration="30">1:30 PM</show>
+        <show start="2:00 PM" duration="30">2:00 PM</show>
+        <show start="2:30 PM" duration="30">2:30 PM</show>
+        <show start="3:00 PM" duration="30">3:00 PM</show>
+        <show start="3:30 PM" duration="30">3:30 PM</show>
+      </shows>
+    </channel>
     <channel type="broadcast" source="CNN">
       <number>CNN</number>
       <name>CNN</name>
       <shows>
-        <show start="4:00 AM" duration="120" description='Early morning news to start your day.'>Early Start</show>
-        <show start="6:00 AM" duration="180" description='Morning news with the latest headlines.'>CNN News Central</show>
+        <show start="8:00 PM" duration="60" description='Prime time news and interviews with Anderson Cooper.'>Anderson Cooper 360</show>
+        <show start="9:00 PM" duration="60" description='Prime time news and interviews with Anderson Cooper.'>Anderson Cooper 360</show>
+        <show start="10:00 PM" duration="60" description='Late night news coverage and analysis.'>CNN Tonight</show>
+        <show start="11:00 PM" duration="60" description='Late night news coverage and analysis.'>CNN Tonight</show>
       </shows>
     </channel>
     <channel type="broadcast" source="ESPN">
