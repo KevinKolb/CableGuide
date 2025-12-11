@@ -1,0 +1,145 @@
+<?xml version="1.0" ?>
+<channels>
+  
+  
+  <channel id="espn.us">
+    
+    
+    <name>ESPN</name>
+    
+    
+    <logo>logos/ESPN.svg</logo>
+    
+    
+    <homepage>https://www.espn.com</homepage>
+    
+  
+  </channel>
+  
+  
+  <channel id="espnews.us">
+    
+    
+    <name>ESPNews</name>
+    
+    
+    <logo>logos/espnews.png</logo>
+    
+    
+    <homepage>https://www.espn.com/watch/espnews</homepage>
+    
+  
+  </channel>
+  
+  
+  <channel id="espn2.us">
+    
+    
+    <name>ESPN2</name>
+    
+    
+    <logo>logos/espn2.png</logo>
+    
+    
+    <homepage>https://www.espn.com/watch/espn2</homepage>
+    
+  
+  </channel>
+  
+  
+  <channel id="espnplus.us">
+    
+    
+    <name>ESPN+</name>
+    
+    
+    <logo>logos/espn+.png</logo>
+    
+    
+    <homepage>https://www.espn.com/espnplus</homepage>
+    
+  
+  </channel>
+  
+  
+  <channel id="accn.us">
+    
+    
+    <name>ACCN</name>
+    
+    
+    <logo>logos/accn.png</logo>
+    
+    
+    <homepage>https://www.espn.com/watch/accn</homepage>
+    
+  
+  </channel>
+  
+  
+  <channel id="accnx.us">
+    
+    
+    <name>ACCNX</name>
+    
+    
+    <logo>logos/accnx.png</logo>
+    
+    
+    <homepage>https://www.espn.com/watch/accnx</homepage>
+    
+  
+  </channel>
+  
+  
+  <channel id="espnu.us">
+    
+    
+    <name>ESPNU</name>
+    
+    
+    <logo>logos/espnu.png</logo>
+    
+    
+    <homepage>https://www.espn.com/watch/espnu</homepage>
+    
+  
+  </channel>
+  
+  
+  <channel id="secnetwork.us">
+    
+    
+    <name>SEC</name>
+    
+    
+    <logo>logos/sec.png</logo>
+    
+    
+    <homepage>https://www.espn.com/watch/sec-network</homepage>
+    
+  
+  </channel>
+  
+  
+  <channel id="espndeportes.us">
+    
+    
+    <name>ESPN Deportes</name>
+    
+    
+    <logo>logos/espnd.png</logo>
+    
+    
+    <homepage>https://www.espndeportes.com</homepage>
+    
+  
+  </channel>
+  
+
+  <channel id="cnn.us">
+    <name>CNN</name>
+    <logo>logos/CNN.svg</logo>
+    <homepage>https://www.cnn.com</homepage>
+  </channel>
+</channels>

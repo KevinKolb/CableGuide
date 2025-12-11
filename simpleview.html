@@ -17,12 +17,18 @@
             color: #1a1a1a;
             line-height: 1.5;
             padding: 0;
+            overflow-y: scroll;
         }
 
         .container {
             max-width: 1200px;
+            min-height: 100vh;
             margin: 0 auto;
             padding: 2rem 1rem;
+        }
+
+        #guide-content {
+            min-height: 400px;
         }
 
         header {
@@ -317,6 +323,20 @@
             }
         }
 
+        // Channel homepage URLs
+        const channelUrls = {
+            'cnn.us': 'https://www.cnn.com',
+            'espn.us': 'https://www.espn.com',
+            'espn2.us': 'https://www.espn.com/watch/espn2',
+            'espnu.us': 'https://www.espn.com/watch/espnu',
+            'espnews.us': 'https://www.espn.com/watch/espnews',
+            'espnplus.us': 'https://www.espn.com/espnplus',
+            'espndeportes.us': 'https://www.espndeportes.com',
+            'secnetwork.us': 'https://www.espn.com/watch/sec-network',
+            'accn.us': 'https://www.espn.com/watch/accn',
+            'accnx.us': 'https://www.espn.com/watch/accnx'
+        };
+
         // Parse channels
         function parseChannels(xmlDoc) {
             const channels = new Map();
@@ -326,8 +346,9 @@
                 const id = channel.getAttribute('id');
                 const name = channel.querySelector('display-name')?.textContent || id;
                 const icon = channel.querySelector('icon')?.getAttribute('src') || '';
+                const url = channelUrls[id] || '';
 
-                channels.set(id, { id, name, icon });
+                channels.set(id, { id, name, icon, url });
             });
 
             return channels;
@@ -410,29 +431,78 @@
             // Add click handlers
             filterContainer.addEventListener('click', (e) => {
                 if (e.target.classList.contains('filter-btn')) {
-                    // Update active state
-                    filterContainer.querySelectorAll('.filter-btn').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
-                    e.target.classList.add('active');
-
-                    // Filter channels
                     const channelId = e.target.getAttribute('data-channel');
-                    filterChannels(channelId);
+
+                    if (channelId === 'all') {
+                        // All button: toggle this button
+                        e.target.classList.toggle('active');
+                        const isActive = e.target.classList.contains('active');
+
+                        // Set all individual channel buttons to match "All" state
+                        filterContainer.querySelectorAll('.filter-btn:not([data-channel="all"])').forEach(btn => {
+                            if (isActive) {
+                                btn.classList.add('active');
+                            } else {
+                                btn.classList.remove('active');
+                            }
+                        });
+                    } else {
+                        // Individual channel: toggle this button
+                        e.target.classList.toggle('active');
+
+                        const allBtn = filterContainer.querySelector('[data-channel="all"]');
+
+                        // Deactivate "All" when individual channels are selected
+                        allBtn.classList.remove('active');
+                    }
+
+                    filterChannels();
                 }
             });
         }
 
         // Filter channel sections
-        function filterChannels(channelId) {
-            const sections = document.querySelectorAll('.channel-section');
-            sections.forEach(section => {
-                if (channelId === 'all' || section.getAttribute('data-channel') === channelId) {
+        function filterChannels() {
+            const allBtn = document.querySelector('[data-channel="all"]');
+            const showAll = allBtn.classList.contains('active');
+
+            if (showAll) {
+                // Show all channels
+                document.querySelectorAll('.channel-section').forEach(section => {
                     section.classList.remove('hidden');
-                } else {
-                    section.classList.add('hidden');
-                }
+                });
+            } else {
+                // Show only selected channels
+                const activeButtons = document.querySelectorAll('.filter-btn.active:not([data-channel="all"])');
+                const activeChannelIds = Array.from(activeButtons).map(btn => btn.getAttribute('data-channel'));
+
+                document.querySelectorAll('.channel-section').forEach(section => {
+                    const channelId = section.getAttribute('data-channel');
+                    if (activeChannelIds.includes(channelId)) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Update meta info with visible counts
+            updateMetaInfo();
+        }
+
+        // Update meta info based on visible channels/programs
+        function updateMetaInfo() {
+            const visibleSections = document.querySelectorAll('.channel-section:not(.hidden)');
+            const visibleChannelCount = visibleSections.length;
+
+            let visibleProgramCount = 0;
+            visibleSections.forEach(section => {
+                const programs = section.querySelectorAll('.program');
+                visibleProgramCount += programs.length;
             });
+
+            document.getElementById('meta-info').textContent =
+                `${visibleChannelCount} channel${visibleChannelCount !== 1 ? 's' : ''} · ${visibleProgramCount} programs`;
         }
 
         // Render guide
@@ -457,6 +527,15 @@
                     icon.className = 'channel-icon';
                     icon.src = channel.icon;
                     icon.alt = channel.name;
+
+                    // Make logo clickable
+                    if (channel.url) {
+                        icon.style.cursor = 'pointer';
+                        icon.addEventListener('click', () => {
+                            window.open(channel.url, '_blank');
+                        });
+                    }
+
                     header.appendChild(icon);
                 }
 
@@ -536,15 +615,8 @@
                 content.appendChild(section);
             });
 
-            // Update meta info
-            const totalPrograms = Array.from(groupedPrograms.values())
-                .reduce((sum, channel) => {
-                    return sum + Array.from(channel.values())
-                        .reduce((s, progs) => s + progs.length, 0);
-                }, 0);
-
-            document.getElementById('meta-info').textContent =
-                `${channels.size} channel${channels.size !== 1 ? 's' : ''} · ${totalPrograms} programs`;
+            // Update meta info after rendering
+            updateMetaInfo();
         }
 
         // Update current time display

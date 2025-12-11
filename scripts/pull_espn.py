@@ -1,26 +1,33 @@
 #!/usr/bin/env python3
 """
 ESPN TV Schedule Scraper
-Fetches ESPN programming schedule and creates/updates guide.xml in XMLTV format.
-Covers from 3 hours ago until 8 days from now (or whatever data is available).
+Fetches ESPN programming schedule from espn.com and updates guide.xml in XMLTV format.
 """
 
-import requests
-from datetime import datetime, timedelta
-import xml.etree.ElementTree as ET
-from xml.dom import minidom
 import os
 import sys
-from typing import List, Dict
 import re
+import time
+import requests
+from datetime import datetime, timedelta
+from typing import List, Dict
+import xml.etree.ElementTree as ET
+from xml.dom import minidom
 
-# Try to import BeautifulSoup for HTML parsing
 try:
     from bs4 import BeautifulSoup
     HAS_BS4 = True
 except ImportError:
-    print("Warning: BeautifulSoup4 not installed. Install with: pip install beautifulsoup4")
+    print("ERROR: BeautifulSoup4 not installed. Install with: pip install beautifulsoup4")
     HAS_BS4 = False
+
+try:
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    HAS_SELENIUM = True
+except ImportError:
+    print("ERROR: Selenium not installed. Install with: pip install selenium")
+    HAS_SELENIUM = False
 
 
 class ESPNScheduleFetcher:
@@ -29,166 +36,272 @@ class ESPNScheduleFetcher:
     def __init__(self):
         self.channel_id = "espn.us"
         self.channel_name = "ESPN"
-        self.programs = []
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        })
 
-    def fetch_schedule_tvguide(self) -> List[Dict]:
-        """
-        Fetch schedule from TV Guide website.
-        Alternative reliable source for ESPN schedule.
-        """
-        programs = []
-        base_url = "https://www.tvguide.com/listings/espn/"
-
-        try:
-            print(f"Fetching ESPN schedule from TVGuide...")
-            response = self.session.get(base_url, timeout=30)
-            response.raise_for_status()
-
-            if not HAS_BS4:
-                print("Cannot parse HTML without BeautifulSoup4")
-                return programs
-
-            soup = BeautifulSoup(response.content, 'html.parser')
-
-            # Parse schedule listings (TVGuide structure may vary)
-            listings = soup.find_all('div', class_=re.compile('listing|program|show'))
-
-            for listing in listings[:100]:  # Limit to reasonable number
-                try:
-                    # Extract time, title, description
-                    time_elem = listing.find(class_=re.compile('time|airtime'))
-                    title_elem = listing.find(class_=re.compile('title|name'))
-                    desc_elem = listing.find(class_=re.compile('desc|synopsis'))
-
-                    if time_elem and title_elem:
-                        programs.append({
-                            'start': time_elem.get_text(strip=True),
-                            'title': title_elem.get_text(strip=True),
-                            'desc': desc_elem.get_text(strip=True) if desc_elem else ''
-                        })
-                except Exception as e:
-                    continue
-
-            print(f"Found {len(programs)} programs from TVGuide")
-
-        except Exception as e:
-            print(f"Error fetching from TVGuide: {e}")
-
-        return programs
-
-    def generate_mock_schedule(self) -> List[Dict]:
-        """
-        Generate a mock ESPN schedule for testing/demonstration.
-        Uses typical ESPN programming patterns.
-        """
-        programs = []
-
-        # Start from 3 hours ago, rounded to nearest hour
-        now = datetime.now()
-        start_time = now.replace(minute=0, second=0, microsecond=0) - timedelta(hours=3)
-
-        # Typical ESPN programming blocks
-        espn_shows = [
-            {"title": "SportsCenter", "duration": 60, "desc": "Sports news and highlights"},
-            {"title": "Get Up", "duration": 180, "desc": "Morning sports talk show"},
-            {"title": "First Take", "duration": 120, "desc": "Sports debate and discussion"},
-            {"title": "NFL Live", "duration": 60, "desc": "NFL news and analysis"},
-            {"title": "NBA Today", "duration": 60, "desc": "NBA news and coverage"},
-            {"title": "Around the Horn", "duration": 30, "desc": "Sports debate roundtable"},
-            {"title": "Pardon the Interruption", "duration": 30, "desc": "Sports talk with Kornheiser and Wilbon"},
-            {"title": "SportsCenter", "duration": 60, "desc": "Evening sports news"},
-            {"title": "College Basketball", "duration": 150, "desc": "Live college basketball game", "category": "Sports"},
-            {"title": "NBA Basketball", "duration": 180, "desc": "Live NBA game", "category": "Sports"},
-            {"title": "NFL Football", "duration": 210, "desc": "Live NFL game", "category": "Sports"},
-            {"title": "College Football", "duration": 210, "desc": "Live college football game", "category": "Sports"},
-            {"title": "SportsCenter", "duration": 60, "desc": "Late night sports highlights"},
-            {"title": "SportsCenter at Night", "duration": 120, "desc": "Overnight sports coverage"},
-        ]
-
-        current_time = start_time
-        end_time = now + timedelta(days=8)
-
-        show_index = 0
-        while current_time < end_time:
-            # Vary programming based on time of day
-            hour = current_time.hour
-
-            # Morning (6am-12pm): Morning shows
-            if 6 <= hour < 12:
-                show = espn_shows[1]  # Get Up or SportsCenter
-            # Afternoon (12pm-5pm): Talk shows
-            elif 12 <= hour < 17:
-                show = espn_shows[show_index % 5 + 2]  # First Take, NFL Live, etc.
-            # Evening/Primetime (5pm-11pm): Games or SportsCenter
-            elif 17 <= hour < 23:
-                if current_time.weekday() in [5, 6]:  # Weekend
-                    show = espn_shows[8 if show_index % 2 == 0 else 9]  # Basketball games
-                else:
-                    show = espn_shows[show_index % 4 + 5]  # Around the Horn, PTI, etc.
-            # Late night (11pm-6am): SportsCenter repeats
-            else:
-                show = espn_shows[12 if show_index % 2 == 0 else 13]
-
-            program = {
-                'start': current_time,
-                'stop': current_time + timedelta(minutes=show['duration']),
-                'title': show['title'],
-                'desc': show['desc']
-            }
-
-            if 'category' in show:
-                program['category'] = show['category']
-
-            programs.append(program)
-
-            current_time += timedelta(minutes=show['duration'])
-            show_index += 1
-
-        print(f"Generated {len(programs)} mock program entries")
-        return programs
-
-    def fetch_all_sources(self, use_mock=False) -> List[Dict]:
-        """
-        Try multiple sources to get the most complete schedule.
-        NEVER generates fake/mock data - only returns real schedule data.
-        """
-        if use_mock:
-            print("ERROR: Mock mode not supported. This script only fetches real data.")
-            print("For real data sources:")
-            print("  - Schedules Direct subscription ($35/year): https://www.schedulesdirect.org/")
-            print("  - TvProfil XMLTV: https://tvprofil.net/xmltv/")
+    def fetch_schedule_espn_selenium(self) -> List[Dict]:
+        """Fetch schedule from ESPN.com using Selenium."""
+        if not HAS_SELENIUM:
+            print("ERROR: Selenium not installed. Install with: pip install selenium")
             return []
 
         programs = []
+        url = "https://www.espn.com/watch/schedule/_/type/upcoming"
 
-        # Try TV Guide first
-        programs = self.fetch_schedule_tvguide()
+        try:
+            print(f"Fetching ESPN schedule from {url} using Selenium...")
 
-        # If still no data, fail - don't generate fake data
-        if not programs:
-            print("ERROR: All external sources failed. No real data available.")
-            print("This script will NOT generate fake/mock data.")
-            print("For real data, you need:")
-            print("  - Schedules Direct subscription ($35/year): https://www.schedulesdirect.org/")
-            print("  - Commercial TV guide API access")
-            print("  - VPN if region-blocked")
+            chrome_options = Options()
+            chrome_options.add_argument('--headless')
+            chrome_options.add_argument('--no-sandbox')
+            chrome_options.add_argument('--disable-dev-shm-usage')
+            chrome_options.add_argument('--disable-gpu')
+            chrome_options.add_argument('--window-size=1920,1080')
+            chrome_options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+
+            driver = webdriver.Chrome(options=chrome_options)
+
+            try:
+                driver.get(url)
+                print("Waiting for page to load...")
+                time.sleep(10)
+
+                page_source = driver.page_source
+
+                debug_html_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'espn_debug.html')
+                with open(debug_html_path, 'w', encoding='utf-8') as f:
+                    f.write(page_source)
+                print(f"Saved debug HTML to {debug_html_path}")
+
+                if not HAS_BS4:
+                    print("ERROR: BeautifulSoup4 not installed. Install with: pip install beautifulsoup4")
+                    return programs
+
+                soup = BeautifulSoup(page_source, 'html.parser')
+
+                # ESPN uses table rows for schedule entries
+                schedule_items = soup.find_all('tr', class_=re.compile(r'Table__TR'))
+                # Filter to only data rows (not headers)
+                schedule_items = [item for item in schedule_items if item.get('data-idx') is not None]
+
+                print(f"Found {len(schedule_items)} schedule entries")
+
+                # Debug: collect all unique logo alt texts
+                unique_logos = set()
+                for item in schedule_items:
+                    logo_elem = item.find('td', class_=re.compile(r'Table__TD--logo'))
+                    if logo_elem:
+                        logo_img = logo_elem.find('img')
+                        if logo_img:
+                            logo_alt = logo_img.get('alt', '').lower()
+                            if logo_alt:
+                                unique_logos.add(logo_alt)
+
+                if unique_logos:
+                    print(f"Found logos for: {', '.join(sorted(unique_logos))}")
+
+                current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+                last_start_time = None
+
+                for item in schedule_items:
+                    try:
+                        # Extract from table cells
+                        time_elem = item.find('td', class_=re.compile(r'Table__TD--time'))
+                        title_elem = item.find('td', class_=re.compile(r'Table__TD--name'))
+
+                        # Get logo to determine channel
+                        logo_elem = item.find('td', class_=re.compile(r'Table__TD--logo'))
+                        logo_img = logo_elem.find('img') if logo_elem else None
+                        logo_alt = logo_img.get('alt', '').lower() if logo_img else ''
+
+                        time_text = time_elem.get_text(strip=True) if time_elem else None
+                        title_text = title_elem.get_text(strip=True) if title_elem else None
+
+                        if not time_text or not title_text:
+                            continue
+
+                        # Determine channel from logo
+                        channel_name = ''
+                        if 'espn2' in logo_alt:
+                            channel_name = 'ESPN2'
+                        elif 'espnu' in logo_alt:
+                            channel_name = 'ESPNU'
+                        elif 'espnews' in logo_alt:
+                            channel_name = 'ESPNews'
+                        elif 'espn+' in logo_alt or 'espnplus' in logo_alt:
+                            channel_name = 'ESPN+'
+                        elif 'deportes' in logo_alt or 'espndeportes' in logo_alt:
+                            channel_name = 'ESPN Deportes'
+                        elif logo_alt == 'sec' or 'sec network' in logo_alt or 'secnetwork' in logo_alt:
+                            channel_name = 'SEC'
+                        elif 'accextra' in logo_alt:
+                            channel_name = 'ACCNX'
+                        elif logo_alt == 'acc' or 'accn' in logo_alt or 'acc network' in logo_alt:
+                            channel_name = 'ACCN'
+                        elif 'espn1' in logo_alt or 'espn' in logo_alt:
+                            channel_name = 'ESPN'
+                        else:
+                            channel_name = 'ESPN'
+
+                        start_time = self.parse_time_string(time_text, current_date)
+
+                        if start_time:
+                            if last_start_time and start_time < last_start_time:
+                                current_date += timedelta(days=1)
+                                start_time = self.parse_time_string(time_text, current_date)
+
+                            last_start_time = start_time
+                            stop_time = start_time + timedelta(hours=2)
+
+                            programs.append({
+                                'start': start_time,
+                                'stop': stop_time,
+                                'title': title_text,
+                                'desc': '',
+                                'channel': channel_name
+                            })
+
+                    except Exception:
+                        continue
+
+                print(f"Successfully parsed {len(programs)} programs from ESPN.com")
+
+            finally:
+                driver.quit()
+
+        except Exception as e:
+            print(f"Error fetching from ESPN.com: {e}")
+            import traceback
+            traceback.print_exc()
 
         return programs
+
+    def parse_time_string(self, time_str: str, base_date: datetime) -> datetime:
+        """Parse time string to datetime (handles 12/24 hour formats)."""
+        try:
+            time_str = re.sub(r'\s*(ET|EST|EDT|PT|PST|PDT)\s*', '', time_str, flags=re.I).strip()
+
+            for fmt in ['%I:%M %p', '%I:%M%p', '%I%p', '%H:%M', '%H%M']:
+                try:
+                    parsed_time = datetime.strptime(time_str, fmt)
+                    return base_date.replace(hour=parsed_time.hour, minute=parsed_time.minute)
+                except ValueError:
+                    continue
+        except Exception:
+            pass
+
+        return None
+
+    def fetch_schedule(self) -> List[Dict]:
+        """Fetch schedule from ESPN.com using Selenium."""
+        print("Fetching from ESPN.com...")
+        programs = self.fetch_schedule_espn_selenium()
+
+        if not programs:
+            print("\nERROR: Failed to fetch schedule from ESPN.com")
+            print("Check: website availability, page structure, Chrome/ChromeDriver")
+
+        return programs
+
+
+class ChannelsXMLGenerator:
+    """Generates and updates channels.xml file with channel metadata."""
+
+    def __init__(self, filename='channels.xml'):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        parent_dir = os.path.dirname(script_dir)
+
+        if not os.path.isabs(filename):
+            self.filename = os.path.join(parent_dir, filename)
+        else:
+            self.filename = filename
+
+        self.tree = None
+        self.root = None
+        self.load_or_create()
+
+    def load_or_create(self):
+        """Load existing channels.xml or create new one."""
+        if os.path.exists(self.filename):
+            try:
+                self.tree = ET.parse(self.filename)
+                self.root = self.tree.getroot()
+            except Exception:
+                self.create_new()
+        else:
+            self.create_new()
+
+    def create_new(self):
+        """Create new channels XML structure."""
+        self.root = ET.Element('channels')
+        self.tree = ET.ElementTree(self.root)
+
+    def update_channel(self, channel_id: str, channel_name: str, logo_path: str = None, homepage: str = None):
+        """Add or update a channel in channels.xml."""
+        # Find existing channel
+        for channel in self.root.findall('channel'):
+            if channel.get('id') == channel_id:
+                # Update existing
+                name_elem = channel.find('name')
+                if name_elem is not None:
+                    name_elem.text = channel_name
+                else:
+                    name_elem = ET.SubElement(channel, 'name')
+                    name_elem.text = channel_name
+
+                if logo_path:
+                    logo_elem = channel.find('logo')
+                    if logo_elem is not None:
+                        logo_elem.text = logo_path
+                    else:
+                        logo_elem = ET.SubElement(channel, 'logo')
+                        logo_elem.text = logo_path
+
+                if homepage:
+                    home_elem = channel.find('homepage')
+                    if home_elem is not None:
+                        home_elem.text = homepage
+                    else:
+                        home_elem = ET.SubElement(channel, 'homepage')
+                        home_elem.text = homepage
+                return
+
+        # Create new channel
+        channel = ET.SubElement(self.root, 'channel')
+        channel.set('id', channel_id)
+
+        name_elem = ET.SubElement(channel, 'name')
+        name_elem.text = channel_name
+
+        if logo_path:
+            logo_elem = ET.SubElement(channel, 'logo')
+            logo_elem.text = logo_path
+
+        if homepage:
+            home_elem = ET.SubElement(channel, 'homepage')
+            home_elem.text = homepage
+
+    def prettify(self, elem: ET.Element) -> str:
+        """Return a pretty-printed XML string."""
+        rough_string = ET.tostring(elem, encoding='unicode')
+        reparsed = minidom.parseString(rough_string)
+        return reparsed.toprettyxml(indent='  ')
+
+    def save(self):
+        """Save the XML to file with pretty formatting."""
+        try:
+            xml_str = self.prettify(self.root)
+            with open(self.filename, 'w', encoding='utf-8') as f:
+                f.write(xml_str)
+        except Exception as e:
+            print(f"Error saving {self.filename}: {e}")
 
 
 class XMLTVGenerator:
     """Generates and updates XMLTV format guide.xml file."""
 
     def __init__(self, filename='guide.xml'):
-        # If running from scripts folder, save to parent directory
         script_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.dirname(script_dir)
 
-        # If filename is relative, save to parent directory
         if not os.path.isabs(filename):
             self.filename = os.path.join(parent_dir, filename)
         else:
@@ -215,73 +328,62 @@ class XMLTVGenerator:
         """Create new XMLTV structure."""
         self.root = ET.Element('tv')
         self.root.set('generator-info-name', 'ESPN Schedule Scraper')
-        self.root.set('generator-info-url', 'https://github.com/yourusername/CableGuide')
+        self.root.set('generator-info-url', 'https://github.com/KevinKolb/CableGuide')
         self.tree = ET.ElementTree(self.root)
-        print(f"Created new {self.filename} structure")
+        print(f"Created new {self.filename}")
 
     def download_logo(self, logo_url: str, logo_filename: str) -> str:
         """Download logo to logos folder and return local path."""
-        # Get parent directory (CableGuide root)
         script_dir = os.path.dirname(os.path.abspath(__file__))
         parent_dir = os.path.dirname(script_dir)
         logos_dir = os.path.join(parent_dir, 'logos')
-
-        # Create logos directory if it doesn't exist
         os.makedirs(logos_dir, exist_ok=True)
 
         logo_path = os.path.join(logos_dir, logo_filename)
 
-        # Download if not already exists
         if not os.path.exists(logo_path):
             try:
-                print(f"Downloading logo from {logo_url}...")
+                print(f"Downloading logo...")
                 response = requests.get(logo_url, timeout=10)
                 response.raise_for_status()
-
                 with open(logo_path, 'wb') as f:
                     f.write(response.content)
-
                 print(f"Saved logo to {logo_filename}")
             except Exception as e:
                 print(f"Failed to download logo: {e}")
-                return logo_url  # Fallback to original URL
+                return logo_url
 
-        # Return relative path from guide.xml location
         return f"logos/{logo_filename}"
 
     def ensure_channel(self, channel_id: str, channel_name: str, logo_url: str = None, logo_filename: str = None):
         """Ensure channel element exists in XML."""
-        # Check if channel already exists
         for channel in self.root.findall('channel'):
             if channel.get('id') == channel_id:
                 return
 
-        # Create channel element
         channel = ET.SubElement(self.root, 'channel')
         channel.set('id', channel_id)
 
         display_name = ET.SubElement(channel, 'display-name')
         display_name.text = channel_name
 
-        if logo_url:
-            if logo_filename:
-                # Download logo and use local path
+        if logo_filename:
+            if logo_url:
                 icon_src = self.download_logo(logo_url, logo_filename)
             else:
-                # Use remote URL directly
-                icon_src = logo_url
+                # Use existing local logo file
+                icon_src = f"logos/{logo_filename}"
             icon = ET.SubElement(channel, 'icon')
             icon.set('src', icon_src)
+        elif logo_url:
+            icon = ET.SubElement(channel, 'icon')
+            icon.set('src', logo_url)
 
         print(f"Added channel: {channel_name} ({channel_id})")
 
     def format_xmltv_time(self, dt: datetime) -> str:
         """Format datetime to XMLTV format: YYYYMMDDHHmmss +TZTZ."""
-        # Get timezone offset
-        offset = dt.strftime('%z')
-        if not offset:
-            offset = '+0000'
-
+        offset = dt.strftime('%z') if dt.strftime('%z') else '+0000'
         return dt.strftime('%Y%m%d%H%M%S') + ' ' + offset
 
     def remove_channel_programs_in_range(self, channel_id: str, start_time: datetime, end_time: datetime):
@@ -292,19 +394,14 @@ class XMLTVGenerator:
             if programme.get('channel') != channel_id:
                 continue
 
-            # Parse start time
             start_str = programme.get('start', '')
             try:
-                # Extract just the datetime part (before timezone)
                 prog_start = datetime.strptime(start_str[:14], '%Y%m%d%H%M%S')
-
-                # Check if this program falls within our date range
                 if start_time <= prog_start <= end_time:
                     programs_to_remove.append(programme)
             except:
                 continue
 
-        # Remove marked programs
         for prog in programs_to_remove:
             self.root.remove(prog)
 
@@ -334,19 +431,13 @@ class XMLTVGenerator:
 
     def update_with_programs(self, channel_id: str, channel_name: str, programs: List[Dict],
                             logo_url: str = None, logo_filename: str = None):
-        """
-        Update guide with new programs.
-        Removes all existing programs for this channel in the date range, then adds new ones.
-        This prevents duplicates.
-        """
+        """Update guide with new programs (removes existing in date range first)."""
         if not programs:
             print("No programs to add")
             return
 
-        # Ensure channel exists
         self.ensure_channel(channel_id, channel_name, logo_url, logo_filename)
 
-        # Determine the date range covered by these programs
         start_time = min(p['start'] for p in programs)
         end_time = max(p['stop'] for p in programs)
 
@@ -354,10 +445,8 @@ class XMLTVGenerator:
         print(f"  From: {start_time.strftime('%Y-%m-%d %H:%M')}")
         print(f"  To:   {end_time.strftime('%Y-%m-%d %H:%M')}")
 
-        # Remove ALL existing programs for this channel in this date range
         self.remove_channel_programs_in_range(channel_id, start_time, end_time)
 
-        # Add all new programs
         for program in programs:
             self.add_program(channel_id, program)
 
@@ -367,19 +456,11 @@ class XMLTVGenerator:
         """Sort all programs by channel ID, then by start time."""
         programs = list(self.root.findall('programme'))
 
-        # Remove all programs from root
         for prog in programs:
             self.root.remove(prog)
 
-        # Sort programs by channel, then start time
-        def get_sort_key(prog):
-            channel = prog.get('channel', '')
-            start = prog.get('start', '')
-            return (channel, start)
+        programs.sort(key=lambda p: (p.get('channel', ''), p.get('start', '')))
 
-        programs.sort(key=get_sort_key)
-
-        # Re-add programs in sorted order
         for prog in programs:
             self.root.append(prog)
 
@@ -394,20 +475,14 @@ class XMLTVGenerator:
     def save(self):
         """Save the XML to file with pretty formatting."""
         try:
-            # Sort programs before saving
             self.sort_programs()
-
-            # Pretty print
             xml_str = self.prettify(self.root)
 
             with open(self.filename, 'w', encoding='utf-8') as f:
                 f.write(xml_str)
 
-            print(f"Saved {self.filename}")
-
-            # Show file size
             size = os.path.getsize(self.filename)
-            print(f"File size: {size:,} bytes")
+            print(f"Saved {self.filename} ({size:,} bytes)")
 
         except Exception as e:
             print(f"Error saving {self.filename}: {e}")
@@ -420,53 +495,75 @@ def main():
     print("=" * 60)
     print()
 
-    # Check for mock mode - NOT SUPPORTED
-    use_mock = '--mock' in sys.argv or '-m' in sys.argv
-
-    if use_mock:
-        print("WARNING: Mock mode not supported in this script.")
-        print("This script only fetches REAL data, never fake/generated data.")
-        print()
-
-    # Initialize fetcher
     fetcher = ESPNScheduleFetcher()
-
-    # Fetch schedule from all available sources
-    programs = fetcher.fetch_all_sources(use_mock=use_mock)
+    programs = fetcher.fetch_schedule()
 
     if not programs:
-        print("Failed to fetch any schedule data")
+        print("Failed to fetch schedule data from ESPN.com")
         return 1
 
-    # Initialize/load XML guide
+    # Group programs by channel
+    channels = {}
+    for program in programs:
+        channel = program.get('channel', 'ESPN')
+        if channel not in channels:
+            channels[channel] = []
+        channels[channel].append(program)
+
+    print(f"\nFound {len(programs)} programs across {len(channels)} channels:")
+    for channel, progs in channels.items():
+        print(f"  {channel}: {len(progs)} programs")
+
+    # Channel metadata - using local PNG logos
+    channel_info = {
+        'ESPN': {'id': 'espn.us', 'logo_url': None, 'logo_file': 'ESPN.svg', 'homepage': 'https://www.espn.com'},
+        'ESPN2': {'id': 'espn2.us', 'logo_url': None, 'logo_file': 'espn2.png', 'homepage': 'https://www.espn.com/watch/espn2'},
+        'ESPNU': {'id': 'espnu.us', 'logo_url': None, 'logo_file': 'espnu.png', 'homepage': 'https://www.espn.com/watch/espnu'},
+        'ESPNews': {'id': 'espnews.us', 'logo_url': None, 'logo_file': 'espnews.png', 'homepage': 'https://www.espn.com/watch/espnews'},
+        'ESPN+': {'id': 'espnplus.us', 'logo_url': None, 'logo_file': 'espn+.png', 'homepage': 'https://www.espn.com/espnplus'},
+        'ESPN Deportes': {'id': 'espndeportes.us', 'logo_url': None, 'logo_file': 'espnd.png', 'homepage': 'https://www.espndeportes.com'},
+        'SEC': {'id': 'secnetwork.us', 'logo_url': None, 'logo_file': 'sec.png', 'homepage': 'https://www.espn.com/watch/sec-network'},
+        'ACCN': {'id': 'accn.us', 'logo_url': None, 'logo_file': 'accn.png', 'homepage': 'https://www.espn.com/watch/accn'},
+        'ACCNX': {'id': 'accnx.us', 'logo_url': None, 'logo_file': 'accnx.png', 'homepage': 'https://www.espn.com/watch/accnx'},
+    }
+
+    # Update guide.xml
     xml_guide = XMLTVGenerator('guide.xml')
 
-    # Update guide with ESPN programs
-    xml_guide.update_with_programs(
-        channel_id='espn.us',
-        channel_name='ESPN',
-        programs=programs,
-        logo_url='https://upload.wikimedia.org/wikipedia/commons/2/2f/ESPN_wordmark.svg',
-        logo_filename='ESPN_wordmark.svg'
-    )
+    for channel_name, progs in channels.items():
+        info = channel_info.get(channel_name, {'id': channel_name.lower().replace(' ', '') + '.us', 'logo_url': None, 'logo_file': None})
+        xml_guide.update_with_programs(
+            channel_id=info['id'],
+            channel_name=channel_name,
+            programs=progs,
+            logo_url=info['logo_url'],
+            logo_filename=info['logo_file']
+        )
 
-    # Save updated guide
     xml_guide.save()
+
+    # Update channels.xml
+    channels_xml = ChannelsXMLGenerator('channels.xml')
+    for channel_name, progs in channels.items():
+        info = channel_info.get(channel_name, {'id': channel_name.lower().replace(' ', '') + '.us', 'logo_file': None, 'homepage': None})
+        if info.get('logo_file'):
+            logo_path = f"logos/{info['logo_file']}"
+        else:
+            logo_path = None
+
+        channels_xml.update_channel(
+            channel_id=info['id'],
+            channel_name=channel_name,
+            logo_path=logo_path,
+            homepage=info.get('homepage')
+        )
+
+    channels_xml.save()
 
     print()
     print("=" * 60)
     print("Done!")
     print("=" * 60)
-    print()
-    print("Next steps:")
-    print("  - Install dependencies: pip install requests beautifulsoup4")
-    print("  - Run with real data: python scripts/pull_espn.py")
-    print("  - Run with mock data: python scripts/pull_espn.py --mock")
-    print()
-    print("For reliable data sources:")
-    print("  - Schedules Direct: https://www.schedulesdirect.org/ ($35/year)")
-    print("  - TvProfil XMLTV: https://tvprofil.net/xmltv/")
-    print()
 
     return 0
 
