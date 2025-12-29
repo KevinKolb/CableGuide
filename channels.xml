@@ -6,7 +6,11 @@
   
   
   
+  
+  
   <channel id="espn.us">
+    
+    
     
     
     
@@ -20,7 +24,11 @@
     
     
     
+    
+    
     <logo>logos/ESPN.svg</logo>
+    
+    
     
     
     
@@ -31,10 +39,14 @@
     
     
     
+    
+  
   
   
   
   </channel>
+  
+  
   
   
   
@@ -48,7 +60,11 @@
     
     
     
+    
+    
     <name>ESPNews</name>
+    
+    
     
     
     
@@ -62,14 +78,20 @@
     
     
     
+    
+    
     <homepage>https://www.espn.com/watch/espnews</homepage>
     
     
     
+    
+  
   
   
   
   </channel>
+  
+  
   
   
   
@@ -83,7 +105,11 @@
     
     
     
+    
+    
     <name>ESPN2</name>
+    
+    
     
     
     
@@ -97,14 +123,20 @@
     
     
     
+    
+    
     <homepage>https://www.espn.com/watch/espn2</homepage>
     
     
     
+    
+  
   
   
   
   </channel>
+  
+  
   
   
   
@@ -118,7 +150,11 @@
     
     
     
+    
+    
     <name>ESPN+</name>
+    
+    
     
     
     
@@ -132,14 +168,20 @@
     
     
     
+    
+    
     <homepage>https://www.espn.com/espnplus</homepage>
     
     
     
+    
+  
   
   
   
   </channel>
+  
+  
   
   
   
@@ -153,7 +195,11 @@
     
     
     
+    
+    
     <name>ACCN</name>
+    
+    
     
     
     
@@ -167,14 +213,20 @@
     
     
     
+    
+    
     <homepage>https://www.espn.com/watch/accn</homepage>
     
     
     
+    
+  
   
   
   
   </channel>
+  
+  
   
   
   
@@ -188,7 +240,11 @@
     
     
     
+    
+    
     <name>ACCNX</name>
+    
+    
     
     
     
@@ -202,14 +258,20 @@
     
     
     
+    
+    
     <homepage>https://www.espn.com/watch/accnx</homepage>
     
     
     
+    
+  
   
   
   
   </channel>
+  
+  
   
   
   
@@ -223,7 +285,11 @@
     
     
     
+    
+    
     <name>ESPNU</name>
+    
+    
     
     
     
@@ -237,14 +303,20 @@
     
     
     
+    
+    
     <homepage>https://www.espn.com/watch/espnu</homepage>
     
     
     
+    
+  
   
   
   
   </channel>
+  
+  
   
   
   
@@ -258,7 +330,11 @@
     
     
     
+    
+    
     <name>SEC</name>
+    
+    
     
     
     
@@ -272,14 +348,20 @@
     
     
     
+    
+    
     <homepage>https://www.espn.com/watch/sec-network</homepage>
     
     
     
+    
+  
   
   
   
   </channel>
+  
+  
   
   
   
@@ -293,7 +375,11 @@
     
     
     
+    
+    
     <name>ESPN Deportes</name>
+    
+    
     
     
     
@@ -307,7 +393,48 @@
     
     
     
+    
+    
     <homepage>https://www.espndeportes.com</homepage>
+    
+    
+    
+    
+  
+  
+  
+  
+  </channel>
+  
+  
+  
+  
+
+  
+  
+  
+  <channel id="cnn.us">
+    
+    
+    
+    
+    
+    
+    <name>CNN</name>
+    
+    
+    
+    
+    
+    
+    <logo>logos/CNN.svg</logo>
+    
+    
+    
+    
+    
+    
+    <homepage>https://www.cnn.com</homepage>
     
     
     
@@ -319,31 +446,6 @@
   
   
 
-  
-  
-  <channel id="cnn.us">
-    
-    
-    
-    
-    <name>CNN</name>
-    
-    
-    
-    
-    <logo>logos/CNN.svg</logo>
-    
-    
-    
-    
-    <homepage>https://www.cnn.com</homepage>
-    
-    
-  
-  
-  </channel>
-  
-  
 
 
 </channels>
